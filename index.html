@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDMS GROUP 11: परीक्षा बैठक व्यवस्था एवं वीक्षक ड्यूटी प्रबंधन सर्वर</title>
+
+    <!-- Google Devanagari & Inter Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- html2canvas and jsPDF CDN for Exports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- SheetJS CDN for Excel Exports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body { font-family: 'Noto Sans Devanagari', 'Inter', sans-serif; font-size: 13.5px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #e0f2fe; }
+        ::-webkit-scrollbar-thumb { background: #0284c7; border-radius: 4px; }
+
+        .active-tab-btn {
+            background-color: #0c4a6e !important;
+            color: #ffffff !important;
+            font-weight: 900 !important;
+            border-bottom: 3px solid #facc15 !important;
+        }
+
+        .sub-pill-btn.active {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+            font-weight: 800 !important;
+        }
+
+        /* Printable A4 Page Setup */
+        .a4-page {
+            width: 210mm;
+            min-height: 295mm;
+            padding: 8mm 10mm;
+            margin: 0 auto 20px auto;
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* PRINT STYLES ENHANCEMENTS */
+        @media print {
+            .no-print, header, nav, #globalBroadcastBannerArea, #portalLockOverlay, #toastContainer, #shareLinkModal, button, select, input {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .workspace-view {
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+            .a4-page {
+                width: 210mm !important;
+                max-width: 100% !important;
+                min-height: auto !important;
+                padding: 6mm 8mm !important;
+                margin: 0 auto !important;
+                box-shadow: none !important;
+                border: none !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+            }
+            .page-break {
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-sky-50/20 min-h-screen flex flex-col relative selection:bg-sky-500 selection:text-white">
+
+    <!-- REAL-TIME DYNAMIC ADMIN BROADCAST BANNER OVERLAY -->
+    <div id="globalBroadcastBannerArea" class="hidden sticky top-0 z-50 no-print"></div>
+
+    <!-- HEADER -->
+    <header class="bg-sky-950 text-white sticky top-0 z-40 border-b-2 border-sky-800 shadow-md no-print">
+        <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center space-x-3">
+                <div class="bg-amber-400 text-sky-950 p-2 rounded-xl font-black text-xl flex items-center justify-center shadow">
+                    <i data-lucide="layout-grid" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="text-base sm:text-lg font-black text-amber-300">SDMS GROUP 11: परीक्षा बैठक व्यवस्था एवं वीक्षक ड्यूटी प्रबंधन सर्वर</h1>
+                        <span class="bg-emerald-500 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-full uppercase flex items-center space-x-1">
+                            <span class="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
+                            <span>लाइव ऑटो-एलोकेटर</span>
+                        </span>
+                    </div>
+                    <p class="text-xs text-sky-200 font-semibold" id="headerSchoolLabel">पीएमश्री शासकीय कन्या उच्चतर माध्यमिक विद्यालय बेगमगंज (रायसेन)</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 text-xs">
+                <div id="ssoUserStatusBadge" class="bg-sky-900 border border-sky-700 px-3 py-1.5 rounded-xl flex items-center space-x-2">
+                    <span class="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
+                    <span id="ssoUserLabel" class="font-bold text-amber-300">शिक्षकीय लॉगिन: अधिकृत यूजर</span>
+                </div>
+                <button onclick="handleUserLogout()" class="bg-sky-800 hover:bg-sky-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs border border-sky-700">
+                    लॉगआउट
+                </button>
+            </div>
+        </div>
+
+        <!-- Group Navigation Ribbon -->
+        <div class="bg-sky-900 px-4 py-1.5 border-t border-sky-800/80 overflow-x-auto">
+            <div class="max-w-7xl mx-auto flex items-center space-x-2 text-xs font-bold whitespace-nowrap">
+                <button onclick="navigateToGroup('group1')" class="text-sky-200 hover:bg-sky-800 px-3 py-1 rounded-lg flex items-center space-x-1"><i data-lucide="settings" class="w-3.5 h-3.5"></i><span>1. मास्टर व सेटिंग्स</span></button>
+                <button onclick="navigateToGroup('group2')" class="text-sky-200 hover:bg-sky-800 px-3 py-1 rounded-lg flex items-center space-x-1"><i data-lucide="user-plus" class="w-3.5 h-3.5"></i><span>2. छात्र प्रवेश व डाटा</span></button>
+                <button onclick="navigateToGroup('group3')" class="text-sky-200 hover:bg-sky-800 px-3 py-1 rounded-lg flex items-center space-x-1"><i data-lucide="printer" class="w-3.5 h-3.5"></i><span>3. फ़ॉर्म्स व आईकार्ड</span></button>
+                <button onclick="navigateToGroup('group4')" class="text-sky-200 hover:bg-sky-800 px-3 py-1 rounded-lg flex items-center space-x-1"><i data-lucide="ticket" class="w-3.5 h-3.5"></i><span>4. प्रवेश पत्र व अंकसूची</span></button>
+                <button onclick="navigateToGroup('group5')" class="text-sky-200 hover:bg-sky-800 px-3 py-1 rounded-lg flex items-center space-x-1"><i data-lucide="building" class="w-3.5 h-3.5"></i><span>5. प्रबंधन व समय-सारणी</span></button>
+                <button onclick="navigateToGroup('group6')" class="text-sky-200 hover:bg-sky-800 px-3 py-1 rounded-lg flex items-center space-x-1"><i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i><span>6. मुख्य परीक्षा अंक व परिणाम</span></button>
+                <button onclick="navigateToGroup('secondExam')" class="bg-rose-800 hover:bg-rose-700 text-amber-300 px-3 py-1 rounded-lg font-black shadow flex items-center space-x-1"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i><span>🚀 7/8. द्वितीय परीक्षा पोर्टल</span></button>
+                <button onclick="navigateToGroup('group11')" class="bg-amber-400 text-sky-950 px-3 py-1 rounded-lg font-black shadow flex items-center space-x-1"><i data-lucide="layout-grid" class="w-3.5 h-3.5"></i><span>🪑 11. परीक्षा बैठक व्यवस्था</span></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 space-y-4">
+
+        <!-- WORKSPACE TAB SWITCHER RIBBON -->
+        <div class="bg-white rounded-2xl p-1.5 border border-slate-200 shadow-sm flex flex-wrap gap-1 no-print text-xs sm:text-sm font-bold">
+            <button onclick="switchWorkspaceTab('dashboard')" id="tab-dashboard" class="workspace-btn active-tab-btn px-4 py-2 rounded-xl transition flex items-center space-x-2 text-sky-950">
+                <i data-lucide="activity" class="w-4 h-4 text-amber-400"></i>
+                <span>1. मुख्य कमांड सेंटर व समरी (Dashboard)</span>
+            </button>
+            <button onclick="switchWorkspaceTab('room-config')" id="tab-room-config" class="workspace-btn px-4 py-2 rounded-xl transition flex items-center space-x-2 text-sky-950 hover:bg-sky-50">
+                <i data-lucide="door-open" class="w-4 h-4 text-indigo-600"></i>
+                <span>2. परीक्षा कक्ष व लेआउट सम्पादक (Rooms & Grids)</span>
+            </button>
+            <button onclick="switchWorkspaceTab('auto-allocator')" id="tab-auto-allocator" class="workspace-btn px-4 py-2 rounded-xl transition flex items-center space-x-2 text-sky-950 hover:bg-sky-50">
+                <i data-lucide="cpu" class="w-4 h-4 text-emerald-600"></i>
+                <span>3. ऑटोमैटिक बैठक व्यवस्था जनरेटर (Smart Seating Engine)</span>
+            </button>
+            <button onclick="switchWorkspaceTab('seating-chart')" id="tab-seating-chart" class="workspace-btn px-4 py-2 rounded-xl transition flex items-center space-x-2 text-sky-950 hover:bg-sky-50">
+                <i data-lucide="layout" class="w-4 h-4 text-sky-600"></i>
+                <span>4. कक्षवार सीटिंग चार्ट व डोर स्लिप्स (Room Charts)</span>
+            </button>
+            <button onclick="switchWorkspaceTab('invigilators')" id="tab-invigilators" class="workspace-btn px-4 py-2 rounded-xl transition flex items-center space-x-2 text-sky-950 hover:bg-sky-50">
+                <i data-lucide="user-check" class="w-4 h-4 text-purple-600"></i>
+                <span>5. वीक्षक (Invigilator) शिक्षक ड्यूटी प्रबंधन</span>
+            </button>
+            <button onclick="switchWorkspaceTab('reports-export')" id="tab-reports-export" class="workspace-btn px-4 py-2 rounded-xl transition flex items-center space-x-2 text-sky-950 hover:bg-sky-50">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-rose-600"></i>
+                <span>6. एडवांस्ड रिपोर्ट्स व एक्सपोर्ट हब (Reports & 5-in-1 Export)</span>
+            </button>
+            <button onclick="switchWorkspaceTab('global-settings')" id="tab-global-settings" class="workspace-btn px-4 py-2 rounded-xl transition flex items-center space-x-2 text-sky-950 hover:bg-sky-50">
+                <i data-lucide="sliders" class="w-4 h-4 text-amber-600"></i>
+                <span>7. हेडर, शाला व परीक्षा सेटिंग्स (Custom Header)</span>
+            </button>
+        </div>
+
+        <!-- ==========================================================================
+           SECTION 1: DASHBOARD & DAILY OVERVIEW METRICS
+           ========================================================================== -->
+        <section id="view-dashboard" class="workspace-view bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-4">
+            <div class="border-b pb-3 flex flex-wrap justify-between items-center gap-2">
+                <div>
+                    <h2 class="text-base font-black text-sky-950 flex items-center space-x-2">
+                        <i data-lucide="activity" class="w-5 h-5 text-sky-600"></i>
+                        <span>1. परीक्षा बैठक व्यवस्था कमांड सेंटर व एकजाई ओवरव्यू</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 font-bold">आज की परीक्षा में किस कक्ष में कितने छात्र बैठे हैं, कुल क्षमता, विषयवार व वीक्षक ड्यूटी समरी।</p>
+                </div>
+
+                <div class="flex items-center space-x-2 no-print">
+                    <button onclick="switchWorkspaceTab('auto-allocator')" class="bg-sky-800 hover:bg-sky-900 text-amber-300 font-black text-xs px-4 py-2 rounded-xl shadow flex items-center space-x-1.5 transition">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        <span>⚡ नई बैठक व्यवस्था जनरेट करें</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- LIVE STATS CARDS GRID -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs font-bold">
+                <div class="bg-gradient-to-br from-sky-900 to-slate-900 text-white p-4 rounded-2xl border border-sky-700 shadow space-y-1">
+                    <span class="text-sky-300 font-extrabold text-[11px] uppercase block">आज की परीक्षा में कुल उपस्थित छात्र:</span>
+                    <span class="text-2xl font-black text-amber-300 font-mono" id="dash_totalSeatedStudents">0 छात्र</span>
+                    <p class="text-[10px] text-sky-200">सीटिंग चार्ट्स द्वारा सत्यापित</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-4 rounded-2xl border border-indigo-700 shadow space-y-1">
+                    <span class="text-indigo-300 font-extrabold text-[11px] uppercase block">सक्रिय परीक्षा कक्ष संख्या:</span>
+                    <span class="text-2xl font-black text-white font-mono" id="dash_activeRoomsCount">0 कक्ष</span>
+                    <p class="text-[10px] text-indigo-200">कुल क्षमता का 0% उपयोग</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-900 to-slate-900 text-white p-4 rounded-2xl border border-purple-700 shadow space-y-1">
+                    <span class="text-purple-300 font-extrabold text-[11px] uppercase block">ड्यूटी पर तैनात वीक्षक (Invigilators):</span>
+                    <span class="text-2xl font-black text-emerald-300 font-mono" id="dash_assignedTeachersCount">0 शिक्षक</span>
+                    <p class="text-[10px] text-purple-200">कक्षवार ड्यूटी आबंटित</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-emerald-900 to-slate-900 text-white p-4 rounded-2xl border border-emerald-700 shadow space-y-1">
+                    <span class="text-emerald-300 font-extrabold text-[11px] uppercase block">लागू बैठक व्यवस्था पैटर्न:</span>
+                    <span class="text-lg font-black text-amber-300 block truncate" id="dash_activePatternName">COL_ALTERNATE</span>
+                    <p class="text-[10px] text-emerald-200">एंटी-चीटिंग पंक्ति/स्तंभ फेरबदल</p>
+                </div>
+            </div>
+
+            <!-- QUICK SUMMARY TABLES GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <!-- Room-wise Capacity & Seated Summary -->
+                <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
+                    <h3 class="font-black text-sky-950 text-xs uppercase flex items-center justify-between">
+                        <span class="flex items-center space-x-1.5">
+                            <i data-lucide="door-open" class="w-4 h-4 text-sky-600"></i>
+                            <span>कक्षवार क्षमता व वर्तमान बैठक संख्या:</span>
+                        </span>
+                        <span class="text-[10px] text-slate-500 font-bold">कक्षवार ब्यौरा</span>
+                    </h3>
+                    <div id="dash_roomSummaryContainer" class="overflow-x-auto max-h-60 overflow-y-auto border rounded-xl bg-white">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+
+                <!-- Class/Subject Breakdown Summary -->
+                <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
+                    <h3 class="font-black text-sky-950 text-xs uppercase flex items-center justify-between">
+                        <span class="flex items-center space-x-1.5">
+                            <i data-lucide="book-open" class="w-4 h-4 text-purple-600"></i>
+                            <span>कक्षावार व विषयवार उपस्थित छात्र ब्यौरा:</span>
+                        </span>
+                        <span class="text-[10px] text-slate-500 font-bold">विषय ब्रेकडाउन</span>
+                    </h3>
+                    <div id="dash_classSubjectSummaryContainer" class="overflow-x-auto max-h-60 overflow-y-auto border rounded-xl bg-white">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+           SECTION 2: ROOM & LAYOUT CONFIGURATOR (ROWS, COLS & BENCH CAPACITY)
+           ========================================================================== -->
+        <section id="view-room-config" class="workspace-view bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-4 hidden">
+            <div class="border-b pb-3 flex flex-wrap justify-between items-center gap-2">
+                <div>
+                    <h2 class="text-base font-black text-indigo-950 flex items-center space-x-2">
+                        <i data-lucide="door-open" class="w-5 h-5 text-indigo-600"></i>
+                        <span>2. परीक्षा कक्ष सम्पादक व ग्रिड लेआउट (Rooms, Rows, Columns & Benches)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 font-bold">नवीन परीक्षा कक्ष जोड़ें, पंक्तियों (Rows) व स्तंभों (Columns) की संख्या, प्रति बेंच छात्र क्षमता तथा डिफ़ॉल्ट पैटर्न निर्धारित करें।</p>
+                </div>
+
+                <div class="flex items-center space-x-2 no-print">
+                    <button onclick="openRoomModal()" class="bg-indigo-800 hover:bg-indigo-900 text-white font-black text-xs px-4 py-2 rounded-xl shadow flex items-center space-x-1.5 transition">
+                        <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
+                        <span>+ नया परीक्षा कक्ष पंजीकृत करें</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="roomCardsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-2">
+                <!-- Dynamically rendered Room Cards -->
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+           SECTION 3: SMART SEATING PLAN ALLOCATOR (ANTI-CHEATING PATTERNS)
+           ========================================================================== -->
+        <section id="view-auto-allocator" class="workspace-view bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-4 hidden">
+            <div class="border-b pb-3 flex flex-wrap justify-between items-center gap-2">
+                <div>
+                    <h2 class="text-base font-black text-emerald-950 flex items-center space-x-2">
+                        <i data-lucide="cpu" class="w-5 h-5 text-emerald-600"></i>
+                        <span>3. स्मार्ट ऑटोमैटिक बैठक व्यवस्था जनरेटर (Row & Column Alternating Engine)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 font-bold">विभिन्न कक्षाओं के छात्रों को एक के पीछे कौन आएगा तथा एक के बगल में कौन आएगा के एंटी-चीटिंग नियमों अनुसार आबंटित करें।</p>
+                </div>
+
+                <div class="flex items-center space-x-2 no-print">
+                    <button onclick="runAutoSeatingAllocationEngine()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-5 py-2.5 rounded-xl shadow-lg transition flex items-center space-x-2">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
+                        <span>🚀 स्वचालित बैठक व्यवस्था जनरेट करें (Run Engine)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ALLOCATION PARAMETERS FORM -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3 font-bold text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-1">1. परीक्षा प्रकार (Exam Level):</label>
+                        <select id="alloc_examType" class="w-full border rounded-xl px-3 py-2 bg-white text-emerald-950 font-black">
+                            <option value="ANNUAL EXAM" selected>वार्षिक परीक्षा (Annual Exam)</option>
+                            <option value="PRE-BOARD EXAM">प्री-बोर्ड परीक्षा (Pre-Board)</option>
+                            <option value="HALF-YEARLY EXAM">अर्द्धवार्षिक परीक्षा (Half-Yearly)</option>
+                            <option value="QUARTERLY EXAM">त्रैमासिक परीक्षा (Quarterly)</option>
+                            <option value="SECOND EXAM">🚀 द्वितीय परीक्षा / पूरक (Second Exam)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-1">2. परीक्षा दिनांक (Date):</label>
+                        <input type="date" id="alloc_date" value="2026-03-03" class="w-full border rounded-xl px-3 py-2 bg-white font-mono font-black text-indigo-950">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-1">3. समय / पालि (Shift):</label>
+                        <select id="alloc_shift" class="w-full border rounded-xl px-3 py-2 bg-white font-mono">
+                            <option value="09:00 AM - 12:00 PM" selected>प्रातः 09:00 AM से 12:00 PM</option>
+                            <option value="01:30 PM - 04:30 PM">दोपहर 01:30 PM से 04:30 PM</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-1">4. बैठक व्यवस्था पैटर्न (Pattern):</label>
+                        <select id="alloc_pattern" class="w-full border rounded-xl px-3 py-2 bg-amber-50 text-amber-950 font-black border-amber-300">
+                            <option value="COL_ALTERNATE" selected>COLUMN ALTERNATE (स्तंभ-वार फेरबदल)</option>
+                            <option value="ROW_ALTERNATE">ROW ALTERNATE (पंक्ति-वार फेरबदल)</option>
+                            <option value="CHECKERBOARD">CHECKERBOARD (शतरंज / डायगोनल पैटर्न)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="border-t pt-2 space-y-2">
+                    <span class="text-slate-900 font-black block">5. इस परीक्षा में शामिल करने हेतु कक्षाएं व विषय चुनें:</span>
+                    <div id="allocClassCheckboxesContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <!-- Dynamic Checkboxes -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOG OUTPUT BOX -->
+            <div id="allocLogBox" class="p-3 bg-slate-950 rounded-xl font-mono text-xs text-emerald-400 space-y-1 max-h-40 overflow-y-auto hidden">
+                <div>[SYSTEM] इंजन तैयार है...</div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+           SECTION 4: ROOM-WISE VISUAL SEATING CHART & DOOR SLIPS
+           ========================================================================== -->
+        <section id="view-seating-chart" class="workspace-view bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-4 hidden">
+            <div class="border-b pb-3 flex flex-wrap justify-between items-center gap-2">
+                <div>
+                    <h2 class="text-base font-black text-sky-950 flex items-center space-x-2">
+                        <i data-lucide="layout" class="w-5 h-5 text-sky-600"></i>
+                        <span>4. कक्षवार सीटिंग चार्ट एवं डोर स्लिप्स (Visual Grid Map & Printable Slips)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 font-bold">कक्ष का चुनाव करके उसका डिजिटल ग्रिड नक्शा देखें या परीक्षा कक्ष के दरवाजे पर चिपकाने हेतु डोर स्लिप प्रिंट करें।</p>
+                </div>
+
+                <div class="flex items-center space-x-2 no-print">
+                    <select id="chartRoomSelect" onchange="renderSeatingChartContainer()" class="border rounded-xl px-3 py-1.5 bg-amber-100 font-black text-xs text-slate-950 border-amber-300">
+                        <!-- Dynamic Rooms -->
+                    </select>
+
+                    <button onclick="exportChartPrint()" class="bg-slate-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow">🖨️ प्रिंट यह कक्ष</button>
+                    <button onclick="exportAllRoomsBulkPrint()" class="bg-sky-800 text-white px-3 py-1.5 rounded-xl font-black text-xs shadow">🖨️ समस्त कक्ष बल्क प्रिंट</button>
+                </div>
+            </div>
+
+            <!-- DISPLAY AREA FOR VISUAL SEATING CHART -->
+            <div id="seatingChartDisplayContainer" class="space-y-6 overflow-x-auto py-2">
+                <!-- Dynamically rendered Room Chart -->
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+           SECTION 5: INVIGILATOR (वीक्षक) TEACHER DUTY MANAGEMENT
+           ========================================================================== -->
+        <section id="view-invigilators" class="workspace-view bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-4 hidden">
+            <div class="border-b pb-3 flex flex-wrap justify-between items-center gap-2">
+                <div>
+                    <h2 class="text-base font-black text-purple-950 flex items-center space-x-2">
+                        <i data-lucide="user-check" class="w-5 h-5 text-purple-600"></i>
+                        <span>5. वीक्षक (Invigilator) शिक्षक ड्यूटी आबंटन एवं चार्ट</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 font-bold">दिनांक, पालि व कक्षवार वीक्षक शिक्षकों की ड्यूटी आबंटित करें तथा सम्पूर्ण ड्यूटी रोस्टर प्रिंट निकालें।</p>
+                </div>
+
+                <div class="flex items-center space-x-2 no-print">
+                    <button onclick="openDutyModal()" class="bg-purple-800 hover:bg-purple-900 text-white font-black text-xs px-4 py-2 rounded-xl shadow flex items-center space-x-1.5 transition">
+                        <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
+                        <span>+ नई वीक्षक ड्यूटी जोड़ें</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="invigilatorDutyTableContainer" class="overflow-x-auto border rounded-2xl">
+                <!-- Dynamic Duty Roster -->
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+           SECTION 6: ADVANCED REPORTS & 5-IN-1 EXPORT HUB
+           ========================================================================== -->
+        <section id="view-reports-export" class="workspace-view bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-4 hidden">
+            <div class="border-b pb-3 flex flex-wrap justify-between items-center gap-2">
+                <div>
+                    <h2 class="text-base font-black text-rose-950 flex items-center space-x-2">
+                        <i data-lucide="file-spreadsheet" class="w-5 h-5 text-rose-600"></i>
+                        <span>6. एडवांस्ड रिपोर्ट्स, कस्टम फ़िल्टर्स एवं 5-इन-1 एक्सपोर्ट टूलबार</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 font-bold">विषयवार, कक्षवार, कक्षावार, सेक्शनवार व शिक्षकवार विस्तृत बैठक रिपोर्ट तथा डाउनलोड सपोर्ट।</p>
+                </div>
+
+                <div class="flex items-center space-x-1.5 no-print flex-wrap gap-1">
+                    <button onclick="switchReportSubPill('room-report')" id="pill-room-report" class="sub-pill-btn active text-xs font-bold px-3 py-1.5 rounded-xl border border-sky-200 text-sky-950 bg-sky-50">
+                        🚪 कक्षवार रिपोर्ट
+                    </button>
+                    <button onclick="switchReportSubPill('class-report')" id="pill-class-report" class="sub-pill-btn text-xs font-bold px-3 py-1.5 rounded-xl border border-sky-200 text-sky-950 hover:bg-sky-50">
+                        🏫 कक्षा/सेक्शन रिपोर्ट
+                    </button>
+                    <button onclick="switchReportSubPill('subject-report')" id="pill-subject-report" class="sub-pill-btn text-xs font-bold px-3 py-1.5 rounded-xl border border-sky-200 text-sky-950 hover:bg-sky-50">
+                        📚 विषयवार रिपोर्ट
+                    </button>
+                    <button onclick="switchReportSubPill('duty-report')" id="pill-duty-report" class="sub-pill-btn text-xs font-bold px-3 py-1.5 rounded-xl border border-sky-200 text-sky-950 hover:bg-sky-50">
+                        👨‍🏫 वीक्षक ड्यूटी रिपोर्ट
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTROLS & EXPORT TOOLBAR -->
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-3 no-print text-xs font-bold">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5">
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">1. परीक्षा प्रकार:</label>
+                        <select id="rptExamTypeSelect" onchange="renderAdvancedReportContainer()" class="w-full border rounded-xl px-2.5 py-1.5 bg-white font-black text-rose-950">
+                            <option value="ANNUAL EXAM" selected>वार्षिक परीक्षा</option>
+                            <option value="PRE-BOARD EXAM">प्री-बोर्ड परीक्षा</option>
+                            <option value="HALF-YEARLY EXAM">अर्द्धवार्षिक परीक्षा</option>
+                            <option value="QUARTERLY EXAM">त्रैमासिक परीक्षा</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">2. दिनांक:</label>
+                        <input type="date" id="rptDateInput" value="2026-03-03" onchange="renderAdvancedReportContainer()" class="w-full border rounded-xl px-2.5 py-1.5 bg-white font-mono font-bold">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">3. खोजें (Search):</label>
+                        <input type="text" id="rptSearchInput" oninput="renderAdvancedReportContainer()" placeholder="🔍 कक्ष, नाम, रोल, विषय..." class="w-full border rounded-xl px-2.5 py-1.5 bg-white font-semibold">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">4. सॉर्टिंग क्रम:</label>
+                        <select id="rptSortSelect" onchange="renderAdvancedReportContainer()" class="w-full border rounded-xl px-2.5 py-1.5 bg-white">
+                            <option value="roomAsc">कक्ष क्रमांक अनुसार</option>
+                            <option value="rollAsc">अनुक्रमांक अनुसार</option>
+                            <option value="nameAsc">छात्र नाम अनुसार</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-end space-x-1.5">
+                        <button onclick="exportReportPrint()" class="bg-slate-800 text-white px-2.5 py-1.5 rounded-lg shadow">🖨️ प्रिंट</button>
+                        <button onclick="exportReportPDF()" class="bg-rose-600 text-white px-2.5 py-1.5 rounded-lg shadow">📄 PDF</button>
+                        <button onclick="exportReportExcel()" class="bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg shadow">📊 Excel</button>
+                        <button onclick="exportReportDoc()" class="bg-blue-600 text-white px-2.5 py-1.5 rounded-lg shadow">📝 Word</button>
+                        <button onclick="exportReportImage()" class="bg-amber-600 text-white px-2.5 py-1.5 rounded-lg shadow">🖼️ Image</button>
+                        <button onclick="openShareModal('REPORT')" class="bg-purple-900 text-white px-2.5 py-1.5 rounded-lg shadow">🔗 शेयर</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPORT DISPLAY CONTAINER -->
+            <div id="advancedReportDisplayContainer" class="space-y-4 overflow-x-auto py-2">
+                <!-- Dynamic Report Table -->
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+           SECTION 7: GLOBAL HEADER, SCHOOL & EXAM SETTINGS (CUSTOM HEADER)
+           ========================================================================== -->
+        <section id="view-global-settings" class="workspace-view bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-4 hidden">
+            <div class="border-b pb-3 flex flex-wrap justify-between items-center gap-2">
+                <div>
+                    <h2 class="text-base font-black text-amber-950 flex items-center space-x-2">
+                        <i data-lucide="sliders" class="w-5 h-5 text-amber-600"></i>
+                        <span>7. शाला हेडर, यू-डाइस, परीक्षा समय व शीर्षक सेटिंग्स (Custom Header Engine)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 font-bold">यहाँ बदला गया शाला नाम, सत्र, परीक्षा प्रकार, समय व वॉटरमार्क सभी कक्षों के डोर स्लिप्स व चार्ट्स में स्वतः सिंक होगा।</p>
+                </div>
+
+                <div class="flex items-center space-x-2 no-print">
+                    <button onclick="saveHeaderSettingsForm(event)" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs px-5 py-2 rounded-xl shadow flex items-center space-x-1.5 transition">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span>सेटिंग्स सहेजें व सिंक करें</span>
+                    </button>
+                </div>
+            </div>
+
+            <form id="globalSettingsForm" onsubmit="saveHeaderSettingsForm(event)" class="space-y-3 font-bold text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-amber-50/50 p-3.5 rounded-2xl border border-amber-200">
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">शाला का नाम (हिन्दी) *</label>
+                        <input type="text" id="cfg_schoolNameHindi" value="पीएमश्री शासकीय कन्या उच्चतर माध्यमिक विद्यालय बेगमगंज" required class="w-full border rounded-xl px-3 py-2 bg-white text-slate-900 font-extrabold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">SCHOOL NAME (IN ENGLISH) *</label>
+                        <input type="text" id="cfg_schoolNameEng" value="PMSHRI GOVERNMENT GIRLS HIGHER SECONDARY SCHOOL BEGAMGANJ" required class="w-full border rounded-xl px-3 py-2 bg-white uppercase font-black text-sky-950">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">यू-डाइस कोड (UDISE Code) *</label>
+                        <input type="text" id="cfg_udiseCode" value="23340222855" required class="w-full border rounded-xl px-3 py-2 bg-white font-mono font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">परीक्षा केंद्र कोड (Center Code) *</label>
+                        <input type="text" id="cfg_centerCode" value="651006" required class="w-full border rounded-xl px-3 py-2 bg-white font-mono font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">सत्र (Session) *</label>
+                        <input type="text" id="cfg_currentSession" value="2025-26" required class="w-full border rounded-xl px-3 py-2 bg-white font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">डिफ़ॉल्ट परीक्षा पालि समय *</label>
+                        <input type="text" id="cfg_shiftTime" value="प्रातः 09:00 AM से 12:00 PM" required class="w-full border rounded-xl px-3 py-2 bg-white font-bold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">वॉटरमार्क टेक्स्ट (Watermark Text)</label>
+                        <input type="text" id="cfg_watermarkText" value="लोक शिक्षण संचालनालय मध्य प्रदेश" class="w-full border rounded-xl px-3 py-2 bg-white font-extrabold">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 text-[11px] mb-0.5">प्राचार्य / अधिकारी पदनाम हस्ताक्षर</label>
+                        <input type="text" id="cfg_principalSignText" value="(रविन्द्र कुमार सिंह) अपर संचालक, लोक शिक्षण म.प्र." class="w-full border rounded-xl px-3 py-2 bg-white font-extrabold">
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-2 border-t">
+                    <button type="submit" class="bg-sky-900 text-white font-black px-6 py-2.5 rounded-xl shadow">सेटिंग्स सहेजें (Save Settings)</button>
+                </div>
+            </form>
+        </section>
+
+    </div>
+
+    <!-- MODAL 1: ROOM CONFIGURATION MODAL -->
+    <div id="roomModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 no-print">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-300 w-full max-w-md p-5 space-y-4 text-xs font-semibold">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-sm font-black text-indigo-950 flex items-center space-x-1.5" id="roomModalTitle">
+                    <i data-lucide="door-open" class="w-5 h-5 text-indigo-600"></i>
+                    <span>परीक्षा कक्ष पंजीकृत करें</span>
+                </h3>
+                <button type="button" onclick="closeRoomModal()" class="text-slate-400 hover:text-slate-700 font-bold text-lg">&times;</button>
+            </div>
+
+            <form id="roomForm" onsubmit="saveRoomForm(event)" class="space-y-3">
+                <input type="hidden" id="rm_editId" value="">
+
+                <div>
+                    <label class="text-slate-700 block mb-0.5 font-bold">1. कक्ष क्रमांक (Room No.) *</label>
+                    <input type="text" id="rm_roomNo" required placeholder="उदा. Room No. 01" class="w-full border rounded-xl px-3 py-2 font-black text-indigo-950 bg-indigo-50">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-slate-700 block mb-0.5 font-bold">2. पंक्तियाँ (Rows) *</label>
+                        <input type="number" id="rm_rows" min="1" max="10" value="4" required class="w-full border rounded-xl px-3 py-2 bg-white font-mono font-bold">
+                    </div>
+                    <div>
+                        <label class="text-slate-700 block mb-0.5 font-bold">3. स्तंभ (Columns) *</label>
+                        <input type="number" id="rm_cols" min="1" max="10" value="5" required class="w-full border rounded-xl px-3 py-2 bg-white font-mono font-bold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-slate-700 block mb-0.5 font-bold">4. प्रति डेस्क छात्र क्षमता *</label>
+                        <select id="rm_seatsPerBench" required class="w-full border rounded-xl px-3 py-2 bg-white font-bold">
+                            <option value="1">1 छात्र प्रति डेस्क (Single)</option>
+                            <option value="2" selected>2 छात्र प्रति डेस्क (Double)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-slate-700 block mb-0.5 font-bold">5. डिफ़ॉल्ट पैटर्न *</label>
+                        <select id="rm_pattern" required class="w-full border rounded-xl px-3 py-2 bg-white font-bold">
+                            <option value="COL_ALTERNATE" selected>Column Alternate</option>
+                            <option value="ROW_ALTERNATE">Row Alternate</option>
+                            <option value="CHECKERBOARD">Checkerboard</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-2 border-t">
+                    <button type="button" onclick="closeRoomModal()" class="bg-slate-200 text-slate-800 px-4 py-2 rounded-xl font-bold">रद्द करें</button>
+                    <button type="submit" class="bg-indigo-900 text-white px-5 py-2 rounded-xl font-black shadow">सुरक्षित करें</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: INVIGILATOR DUTY MODAL -->
+    <div id="dutyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 no-print">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-300 w-full max-w-md p-5 space-y-4 text-xs font-semibold">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-sm font-black text-purple-950 flex items-center space-x-1.5">
+                    <i data-lucide="user-check" class="w-5 h-5 text-purple-600"></i>
+                    <span>वीक्षक (Invigilator) ड्यूटी जोड़ें</span>
+                </h3>
+                <button type="button" onclick="closeDutyModal()" class="text-slate-400 hover:text-slate-700 font-bold text-lg">&times;</button>
+            </div>
+
+            <form id="dutyForm" onsubmit="saveDutyForm(event)" class="space-y-3">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-slate-700 block mb-0.5 font-bold">1. दिनांक *</label>
+                        <input type="date" id="dt_date" value="2026-03-03" required class="w-full border rounded-xl px-3 py-2 bg-white font-mono font-bold">
+                    </div>
+                    <div>
+                        <label class="text-slate-700 block mb-0.5 font-bold">2. पालि (Shift) *</label>
+                        <input type="text" id="dt_shift" value="09:00 AM - 12:00 PM" required class="w-full border rounded-xl px-3 py-2 bg-white font-mono font-bold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-slate-700 block mb-0.5 font-bold">3. परीक्षा कक्ष चुनिए *</label>
+                    <select id="dt_roomId" required class="w-full border rounded-xl px-3 py-2 bg-white font-bold text-indigo-950">
+                        <!-- Dynamic Rooms -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-slate-700 block mb-0.5 font-bold">4. वीक्षक शिक्षक चुनिए *</label>
+                    <select id="dt_teacherId" required class="w-full border rounded-xl px-3 py-2 bg-white font-bold text-purple-950">
+                        <!-- Dynamic Teachers -->
+                    </select>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-2 border-t">
+                    <button type="button" onclick="closeDutyModal()" class="bg-slate-200 text-slate-800 px-4 py-2 rounded-xl font-bold">रद्द करें</button>
+                    <button type="submit" class="bg-purple-900 text-white px-5 py-2 rounded-xl font-black shadow">ड्यूटी सुरक्षित करें</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SHARE LINK POPUP MODAL -->
+    <div id="shareLinkModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-300 w-full max-w-md p-5 space-y-4 text-xs font-semibold">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-sm font-black text-sky-950 flex items-center space-x-1.5">
+                    <i data-lucide="share-2" class="w-5 h-5 text-sky-600"></i>
+                    <span>ऑनलाइन शेयर लिंक जनरेटर</span>
+                </h3>
+                <button type="button" onclick="closeShareModal()" class="text-slate-400 hover:text-slate-700 font-bold text-lg">&times;</button>
+            </div>
+            <p class="text-slate-600">इस बैठक व्यवस्था/रिपोर्ट हेतु डायरेक्ट ऑनलाइन शेयर लिंक जनरेट हुआ है:</p>
+            <div>
+                <input type="text" id="shareUrlInput" readonly class="w-full border rounded-xl p-2 font-mono text-xs bg-sky-50 text-sky-950 font-bold border-sky-300">
+            </div>
+            <div class="flex justify-end space-x-2 pt-2 border-t">
+                <button onclick="copyShareUrl()" class="bg-sky-900 text-white px-5 py-2 rounded-xl font-black shadow flex items-center space-x-1">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                    <span>लिंक कॉपी करें</span>
+                </button>
+                <button onclick="closeShareModal()" class="bg-slate-200 text-slate-800 px-4 py-2 rounded-xl font-bold">बंद करें</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 no-print"></div>
+
+    <script>
+        /* ==========================================================================
+           1. SHARED DATABASE, SSO & GLOBAL STATE (DEFENSIVE ENGINE)
+           ========================================================================== */
+        const DB_KEY = 'SDMS_MASTER_SHARED_DB_V1';
+        const SSO_KEY = 'SDMS_SSO_SESSION_KEY';
+        const BROADCAST_STORE_KEY = 'SDMS_GLOBAL_BROADCAST_STORE';
+        const channel = new BroadcastChannel('sdms_sync_channel');
+
+        const GROUP_URLS = {
+            'group1': 'https://matujhesalam123.github.io/1Setting/',
+            'group2': 'https://matujhesalam123.github.io/2Addmission/',
+            'group3': 'https://matujhesalam123.github.io/3Forms/',
+            'group4': 'https://matujhesalam123.github.io/4Marksheet/',
+            'group5': 'https://matujhesalam123.github.io/5Timetable/',
+            'group6': 'https://matujhesalam123.github.io/6Result/',
+            'secondExam': 'https://matujhesalam123.github.io/8secondExam/',
+            'group11': 'https://matujhesalam123.github.io/11SeatingArrangement/'
+        };
+
+        const DEFAULT_ROOMS = [
+            { id: "RM_101", roomNo: "Room No. 01", rows: 4, cols: 5, seatsPerBench: 2, capacity: 40, pattern: "COL_ALTERNATE" },
+            { id: "RM_102", roomNo: "Room No. 02", rows: 4, cols: 5, seatsPerBench: 2, capacity: 40, pattern: "COL_ALTERNATE" },
+            { id: "RM_103", roomNo: "Room No. 03", rows: 5, cols: 4, seatsPerBench: 2, capacity: 40, pattern: "CHECKERBOARD" },
+            { id: "RM_104", roomNo: "Room No. 04", rows: 4, cols: 4, seatsPerBench: 2, capacity: 32, pattern: "ROW_ALTERNATE" }
+        ];
+
+        const DEFAULT_TEACHERS = [
+            { id: "TCH_1001", code: "TCH-1001", nameHindi: "डॉ. श्रीकांत शर्मा", designation: "प्राचार्य" },
+            { id: "TCH_1002", code: "TCH-1002", nameHindi: "श्री दिनेश पटेल", designation: "उच्च माध्यमिक शिक्षक (रसायन)" },
+            { id: "TCH_1003", code: "TCH-1003", nameHindi: "श्री अरविन्द सोनी", designation: "उच्च माध्यमिक शिक्षक (भौतिक)" },
+            { id: "TCH_1004", code: "TCH-1004", nameHindi: "श्री विनोद जाटव", designation: "माध्यमिक शिक्षक (हिन्दी)" },
+            { id: "TCH_1005", code: "TCH-1005", nameHindi: "श्रीमती अंजू जैन", designation: "माध्यमिक शिक्षक (गणित)" }
+        ];
+
+        const DEFAULT_STUDENTS = [
+            { id: "STU_1001", scholarNo: "16626", rollNo: "1001", nameHindi: "तपस्या तिवारी", nameEng: "TAPASYA TIWARI", targetClass: "10th", section: "A", subject: "(100) Mathematics" },
+            { id: "STU_1002", scholarNo: "16627", rollNo: "1002", nameHindi: "अंजली मेहरा", nameEng: "ANJALI MEHRA", targetClass: "10th", section: "A", subject: "(100) Mathematics" },
+            { id: "STU_1003", scholarNo: "16628", rollNo: "1003", nameHindi: "प्रिया शर्मा", nameEng: "PRIYA SHARMA", targetClass: "10th", section: "A", subject: "(100) Mathematics" },
+            { id: "STU_1004", scholarNo: "16629", rollNo: "1004", nameHindi: "सना खान", nameEng: "SANA KHAN", targetClass: "10th", section: "A", subject: "(100) Mathematics" },
+            { id: "STU_1101", scholarNo: "15807", rollNo: "1101", nameHindi: "आशना", nameEng: "AASHNA", targetClass: "11th", section: "A1", subject: "(041) Physics" },
+            { id: "STU_1102", scholarNo: "15808", rollNo: "1102", nameHindi: "आकृति सिंह", nameEng: "AAKRITI SINGH", targetClass: "11th", section: "A1", subject: "(041) Physics" },
+            { id: "STU_1103", scholarNo: "15809", rollNo: "1103", nameHindi: "दीप्ति गौर", nameEng: "DEEPTI GAUR", targetClass: "11th", section: "A1", subject: "(041) Physics" },
+            { id: "STU_1201", scholarNo: "14801", rollNo: "1201", nameHindi: "मंतशा बी", nameEng: "MANTASHA BEE", targetClass: "12th", section: "B", subject: "(140) Economics" },
+            { id: "STU_1202", scholarNo: "14802", rollNo: "1202", nameHindi: "रूपाली यादव", nameEng: "RUPALI YADAV", targetClass: "12th", section: "B", subject: "(140) Economics" },
+            { id: "STU_9001", scholarNo: "17001", rollNo: "9001", nameHindi: "रितिका लोधी", nameEng: "RITIKA LODHI", targetClass: "9th", section: "A", subject: "(100) Science" },
+            { id: "STU_9002", scholarNo: "17002", rollNo: "9002", nameHindi: "नेहा पटेल", nameEng: "NEHA PATEL", targetClass: "9th", section: "A", subject: "(100) Science" }
+        ];
+
+        let masterDB = {
+            header: {
+                schoolNameHindi: "पीएमश्री शासकीय कन्या उच्चतर माध्यमिक विद्यालय बेगमगंज",
+                schoolNameEng: "PMSHRI GOVERNMENT GIRLS HIGHER SECONDARY SCHOOL BEGAMGANJ",
+                udiseCode: "23340222855",
+                centerCode: "651006",
+                currentSession: "2025-26",
+                shiftTime: "प्रातः 09:00 AM से 12:00 PM",
+                watermarkText: "लोक शिक्षण संचालनालय मध्य प्रदेश",
+                principalSignText: "(रविन्द्र कुमार सिंह) अपर संचालक"
+            },
+            rooms: [...DEFAULT_ROOMS],
+            teachers: [...DEFAULT_TEACHERS],
+            students: [...DEFAULT_STUDENTS],
+            duties: [
+                { id: "DUTY_1", date: "2026-03-03", shift: "09:00 AM - 12:00 PM", roomId: "RM_101", roomNo: "Room No. 01", teacherId: "TCH_1002", teacherName: "श्री दिनेश पटेल" },
+                { id: "DUTY_2", date: "2026-03-03", shift: "09:00 AM - 12:00 PM", roomId: "RM_102", roomNo: "Room No. 02", teacherId: "TCH_1003", teacherName: "श्री अरविन्द सोनी" }
+            ],
+            seatingPlans: {} // Saved generated seating grids key: `${date}_${shift}`
+        };
+
+        let reportSubPill = 'room-report';
+
+        function safeStr(val, fallback = '') {
+            if (val === null || val === undefined) return fallback;
+            return String(val);
+        }
+
+        window.onload = function() {
+            try {
+                loadMasterDBFromStorage();
+                if (window.lucide) lucide.createIcons();
+                renderBroadcastBanner();
+                populateDropdowns();
+                runAutoSeatingAllocationEngine(true); // Initial silent build
+                switchWorkspaceTab('dashboard');
+            } catch(err) {
+                console.error("Init Error:", err);
+            }
+        };
+
+        function showToast(msg, type = "success") {
+            const container = document.getElementById("toastContainer");
+            if (!container) return;
+            const toast = document.createElement("div");
+            toast.className = `p-3.5 rounded-xl text-xs sm:text-sm font-bold text-white shadow-xl ${type === 'success' ? 'bg-sky-950 border border-amber-400' : 'bg-rose-600'}`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function loadMasterDBFromStorage() {
+            const raw = localStorage.getItem(DB_KEY);
+            if (raw) {
+                try {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && typeof parsed === 'object') {
+                        if (Array.isArray(parsed.rooms) && parsed.rooms.length > 0) masterDB.rooms = parsed.rooms;
+                        if (Array.isArray(parsed.students) && parsed.students.length > 0) masterDB.students = parsed.students;
+                        if (Array.isArray(parsed.teachers) && parsed.teachers.length > 0) masterDB.teachers = parsed.teachers;
+                        if (Array.isArray(parsed.duties)) masterDB.duties = parsed.duties;
+                        if (parsed.header) masterDB.header = { ...masterDB.header, ...parsed.header };
+                    }
+                } catch(e){}
+            }
+        }
+
+        function saveMasterDBToStorage(eventType = 'SDMS_SEATING_UPDATED') {
+            localStorage.setItem(DB_KEY, JSON.stringify(masterDB));
+            channel.postMessage({ type: eventType, timestamp: Date.now() });
+        }
+
+        function navigateToGroup(groupKey) {
+            if (GROUP_URLS[groupKey]) window.location.href = GROUP_URLS[groupKey];
+        }
+
+        function switchWorkspaceTab(tabId) {
+            document.querySelectorAll('.workspace-view').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('.workspace-btn').forEach(b => {
+                b.classList.remove('active-tab-btn');
+                b.classList.add('hover:bg-sky-50');
+            });
+
+            const targetView = document.getElementById(`view-${tabId}`);
+            if (targetView) targetView.classList.remove('hidden');
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active-tab-btn');
+                activeBtn.classList.remove('hover:bg-sky-50');
+            }
+
+            if (tabId === 'dashboard') renderDashboardOverview();
+            if (tabId === 'room-config') renderRoomConfigList();
+            if (tabId === 'auto-allocator') populateAllocatorForm();
+            if (tabId === 'seating-chart') renderSeatingChartContainer();
+            if (tabId === 'invigilators') renderInvigilatorsDutyRoster();
+            if (tabId === 'reports-export') renderAdvancedReportContainer();
+
+            if (window.lucide) lucide.createIcons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function populateDropdowns() {
+            const rooms = masterDB.rooms || [];
+            const teachers = masterDB.teachers || [];
+
+            // Room dropdowns
+            const chartSelect = document.getElementById("chartRoomSelect");
+            if (chartSelect) {
+                chartSelect.innerHTML = rooms.map(r => `<option value="${r.id}">${safeStr(r.roomNo)} (क्षमता: ${r.capacity})</option>`).join('');
+            }
+
+            const dtRoomSelect = document.getElementById("dt_roomId");
+            if (dtRoomSelect) {
+                dtRoomSelect.innerHTML = rooms.map(r => `<option value="${r.id}">${safeStr(r.roomNo)}</option>`).join('');
+            }
+
+            // Teacher dropdown
+            const dtTeacherSelect = document.getElementById("dt_teacherId");
+            if (dtTeacherSelect) {
+                dtTeacherSelect.innerHTML = teachers.map(t => `<option value="${t.id}">${safeStr(t.nameHindi)} (${safeStr(t.designation)})</option>`).join('');
+            }
+        }
+
+        /* ==========================================================================
+           2. SMART AUTO-SEATING ALLOCATION ALGORITHM
+           ========================================================================== */
+        function populateAllocatorForm() {
+            const container = document.getElementById("allocClassCheckboxesContainer");
+            if (!container) return;
+
+            const students = masterDB.students || [];
+            const uniqueClasses = Array.from(new Set(students.map(s => `${s.targetClass}-${s.section}`)));
+
+            container.innerHTML = uniqueClasses.map(cs => `
+                <label class="flex items-center space-x-2 p-2 bg-white rounded-xl border border-slate-200 cursor-pointer text-xs font-bold shadow-sm">
+                    <input type="checkbox" name="alloc_class_check" value="${cs}" checked class="text-sky-600 rounded w-4 h-4">
+                    <span>कक्षा ${cs}</span>
+                </label>
+            `).join('');
+        }
+
+        function runAutoSeatingAllocationEngine(silent = false) {
+            const examType = document.getElementById("alloc_examType")?.value || "ANNUAL EXAM";
+            const date = document.getElementById("alloc_date")?.value || "2026-03-03";
+            const shift = document.getElementById("alloc_shift")?.value || "09:00 AM - 12:00 PM";
+            const pattern = document.getElementById("alloc_pattern")?.value || "COL_ALTERNATE";
+
+            const selectedClassCheckboxes = Array.from(document.querySelectorAll('input[name="alloc_class_check"]:checked')).map(cb => cb.value);
+
+            let studentPool = masterDB.students || [];
+            if (selectedClassCheckboxes.length > 0) {
+                studentPool = studentPool.filter(s => selectedClassCheckboxes.includes(`${s.targetClass}-${s.section}`));
+            }
+
+            // Group students into class-based queues for inter-leaving
+            const queuesByClass = {};
+            studentPool.forEach(st => {
+                const key = `${st.targetClass}-${st.section}`;
+                queuesByClass[key] = queuesByClass[key] || [];
+                queuesByClass[key].push(st);
+            });
+
+            const classKeys = Object.keys(queuesByClass);
+            if (classKeys.length === 0) {
+                if (!silent) showToast("बैठक व्यवस्था हेतु छात्र रिकॉर्ड उपलब्ध नहीं हैं!", "error");
+                return;
+            }
+
+            const rooms = masterDB.rooms || [];
+            const seatingPlanKey = `${date}_${shift}`;
+            const allocatedPlan = { date, shift, examType, pattern, rooms: [] };
+
+            let currentClassIndex = 0;
+
+            rooms.forEach(rm => {
+                const rows = parseInt(rm.rows) || 4;
+                const cols = parseInt(rm.cols) || 5;
+                const seatsPerBench = parseInt(rm.seatsPerBench) || 2;
+                const roomGrid = [];
+
+                for (let r = 0; r < rows; r++) {
+                    const rowArray = [];
+                    for (let c = 0; c < cols; c++) {
+                        const benchSeats = [];
+                        for (let s = 0; s < seatsPerBench; s++) {
+                            // Pick student from active queue using Anti-Cheating strategy
+                            let candidateStudent = null;
+                            
+                            // Strategy: Rotate class queues based on column/row
+                            let targetQueueKey = null;
+                            if (pattern === 'COL_ALTERNATE') {
+                                targetQueueKey = classKeys[(c + s) % classKeys.length];
+                            } else if (pattern === 'ROW_ALTERNATE') {
+                                targetQueueKey = classKeys[(r + s) % classKeys.length];
+                            } else { // CHECKERBOARD
+                                targetQueueKey = classKeys[(r + c + s) % classKeys.length];
+                            }
+
+                            // Fetch next student from target queue or fallback to non-empty queue
+                            if (queuesByClass[targetQueueKey] && queuesByClass[targetQueueKey].length > 0) {
+                                candidateStudent = queuesByClass[targetQueueKey].shift();
+                            } else {
+                                // Fallback
+                                const availableKey = classKeys.find(k => queuesByClass[k] && queuesByClass[k].length > 0);
+                                if (availableKey) {
+                                    candidateStudent = queuesByClass[availableKey].shift();
+                                }
+                            }
+
+                            benchSeats.push(candidateStudent ? { ...candidateStudent } : null);
+                        }
+                        rowArray.push(benchSeats);
+                    }
+                    roomGrid.push(rowArray);
+                }
+
+                allocatedPlan.rooms.push({
+                    roomId: rm.id,
+                    roomNo: rm.roomNo,
+                    rows,
+                    cols,
+                    seatsPerBench,
+                    grid: roomGrid
+                });
+            });
+
+            masterDB.seatingPlans[seatingPlanKey] = allocatedPlan;
+            saveMasterDBToStorage('SDMS_SEATING_UPDATED');
+
+            if (!silent) {
+                showToast("स्वचालित बैठक व्यवस्था सफलतापूर्वक जनरेट हुई!");
+                switchWorkspaceTab('seating-chart');
+            }
+        }
+
+        /* ==========================================================================
+           3. SECTION 1: DASHBOARD & SUMMARY RENDERERS
+           ========================================================================== */
+        function renderDashboardOverview() {
+            const plan = masterDB.seatingPlans["2026-03-03_09:00 AM - 12:00 PM"] || Object.values(masterDB.seatingPlans)[0];
+            const h = masterDB.header || {};
+
+            let totalSeated = 0;
+            const classSubjectCounts = {};
+
+            if (plan && plan.rooms) {
+                plan.rooms.forEach(rm => {
+                    rm.grid.forEach(row => {
+                        row.forEach(col => {
+                            col.forEach(st => {
+                                if (st) {
+                                    totalSeated++;
+                                    const key = `कक्षा ${st.targetClass}-${st.section} (${st.subject || 'सामान्य'})`;
+                                    classSubjectCounts[key] = (classSubjectCounts[key] || 0) + 1;
+                                }
+                            });
+                        });
+                    });
+                });
+            }
+
+            document.getElementById("dash_totalSeatedStudents").innerText = `${totalSeated} छात्र`;
+            document.getElementById("dash_activeRoomsCount").innerText = `${(masterDB.rooms || []).length} कक्ष`;
+            document.getElementById("dash_assignedTeachersCount").innerText = `${(masterDB.duties || []).length} शिक्षक`;
+            document.getElementById("dash_activePatternName").innerText = plan?.pattern || "COL_ALTERNATE";
+
+            // Room Capacity Table
+            const roomSummaryContainer = document.getElementById("dash_roomSummaryContainer");
+            if (roomSummaryContainer) {
+                roomSummaryContainer.innerHTML = `
+                    <table class="w-full text-xs text-center border-collapse">
+                        <thead class="bg-slate-100 font-bold border-b">
+                            <tr>
+                                <th class="p-1.5 border-r">कक्ष क्रमांक</th>
+                                <th class="p-1.5 border-r">ग्रिड लेआउट</th>
+                                <th class="p-1.5 border-r">कुल क्षमता</th>
+                                <th class="p-1.5">वर्तमान बैठाए गए छात्र</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${(masterDB.rooms || []).map(rm => {
+                                // Count seated in this room
+                                let seatedInRoom = 0;
+                                if (plan && plan.rooms) {
+                                    const matchRm = plan.rooms.find(r => r.roomId === rm.id);
+                                    if (matchRm) {
+                                        matchRm.grid.forEach(r => r.forEach(c => c.forEach(st => { if (st) seatedInRoom++; })));
+                                    }
+                                }
+                                return `
+                                    <tr class="border-b">
+                                        <td class="p-1.5 border-r font-bold text-sky-950">${safeStr(rm.roomNo)}</td>
+                                        <td class="p-1.5 border-r font-mono text-[11px]">${rm.rows} Rows × ${rm.cols} Cols</td>
+                                        <td class="p-1.5 border-r font-mono font-black text-slate-700">${rm.capacity}</td>
+                                        <td class="p-1.5 font-mono font-black text-emerald-700 bg-emerald-50">${seatedInRoom} छात्र</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            // Class/Subject Breakdown Table
+            const classSubContainer = document.getElementById("dash_classSubjectSummaryContainer");
+            if (classSubContainer) {
+                classSubContainer.innerHTML = `
+                    <table class="w-full text-xs text-center border-collapse">
+                        <thead class="bg-slate-100 font-bold border-b">
+                            <tr>
+                                <th class="p-1.5 border-r text-left pl-3">कक्षा एवं विषय विवरण</th>
+                                <th class="p-1.5">उपस्थित छात्र संख्या</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.keys(classSubjectCounts).length === 0 ? `<tr><td colspan="2" class="p-3 text-slate-500">कोई डेटा नहीं</td></tr>` :
+                            Object.entries(classSubjectCounts).map(([key, count]) => `
+                                <tr class="border-b">
+                                    <td class="p-1.5 border-r text-left pl-3 font-bold text-indigo-950">${key}</td>
+                                    <td class="p-1.5 font-mono font-black text-purple-950 bg-purple-50">${count} छात्र</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+        }
+
+        /* ==========================================================================
+           4. SECTION 2: ROOM & LAYOUT CONFIGURATOR RENDERER
+           ========================================================================== */
+        function renderRoomConfigList() {
+            const container = document.getElementById("roomCardsListContainer");
+            if (!container) return;
+
+            const rooms = masterDB.rooms || [];
+            container.innerHTML = rooms.map(rm => `
+                <div class="bg-white rounded-2xl border-2 border-slate-200 shadow-md p-4 space-y-3 relative font-sans flex flex-col justify-between">
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <span class="bg-sky-100 text-sky-950 font-black text-xs px-2.5 py-0.5 rounded-full uppercase border border-sky-300">EXAM ROOM</span>
+                            <span class="font-mono font-black text-amber-600 text-xs">CAPACITY: ${rm.capacity} SEATS</span>
+                        </div>
+
+                        <h3 class="font-black text-base text-sky-950">${safeStr(rm.roomNo)}</h3>
+
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1 text-xs font-semibold text-slate-700">
+                            <p class="flex justify-between"><span>पंक्तियाँ (Rows):</span> <span class="font-mono font-bold text-slate-900">${rm.rows}</span></p>
+                            <p class="flex justify-between"><span>स्तंभ (Columns):</span> <span class="font-mono font-bold text-slate-900">${rm.cols}</span></p>
+                            <p class="flex justify-between"><span>प्रति डेस्क क्षमता:</span> <span class="font-bold text-indigo-950">${rm.seatsPerBench} छात्र / डेस्क</span></p>
+                            <p class="flex justify-between"><span>डिफ़ॉल्ट पैटर्न:</span> <span class="font-bold text-emerald-800">${rm.pattern}</span></p>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t flex justify-end space-x-2 no-print">
+                        <button onclick="openRoomModal('${rm.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-xl font-bold shadow text-xs">एडिट</button>
+                        <button onclick="confirmDeleteRoom('${rm.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded-xl font-bold shadow text-xs">हटाएं</button>
+                    </div>
+                </div>
+            `).join('');
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function openRoomModal(id = null) {
+            document.getElementById("roomForm").reset();
+            document.getElementById("rm_editId").value = "";
+            document.getElementById("roomModalTitle").innerText = "परीक्षा कक्ष पंजीकृत करें";
+
+            if (id) {
+                const rm = (masterDB.rooms || []).find(r => r.id === id);
+                if (rm) {
+                    document.getElementById("rm_editId").value = rm.id;
+                    document.getElementById("rm_roomNo").value = rm.roomNo;
+                    document.getElementById("rm_rows").value = rm.rows;
+                    document.getElementById("rm_cols").value = rm.cols;
+                    document.getElementById("rm_seatsPerBench").value = rm.seatsPerBench;
+                    document.getElementById("rm_pattern").value = rm.pattern;
+                }
+            }
+            document.getElementById("roomModal").classList.remove("hidden");
+        }
+
+        function closeRoomModal() { document.getElementById("roomModal").classList.add("hidden"); }
+
+        function saveRoomForm(e) {
+            e.preventDefault();
+            const editId = document.getElementById("rm_editId").value;
+            const rows = parseInt(document.getElementById("rm_rows").value) || 4;
+            const cols = parseInt(document.getElementById("rm_cols").value) || 5;
+            const seatsPerBench = parseInt(document.getElementById("rm_seatsPerBench").value) || 2;
+
+            const rmObj = {
+                id: editId || ("RM_" + Date.now()),
+                roomNo: document.getElementById("rm_roomNo").value.trim(),
+                rows,
+                cols,
+                seatsPerBench,
+                capacity: rows * cols * seatsPerBench,
+                pattern: document.getElementById("rm_pattern").value
+            };
+
+            masterDB.rooms = masterDB.rooms || [];
+            if (editId) {
+                const idx = masterDB.rooms.findIndex(r => r.id === editId);
+                if (idx !== -1) masterDB.rooms[idx] = rmObj;
+            } else {
+                masterDB.rooms.push(rmObj);
+            }
+
+            saveMasterDBToStorage('SDMS_ROOMS_UPDATED');
+            closeRoomModal();
+            populateDropdowns();
+            renderRoomConfigList();
+            showToast("परीक्षा कक्ष लेआउट सुरक्षित हुआ!");
+        }
+
+        function confirmDeleteRoom(id) {
+            pendingDeleteAction = () => {
+                masterDB.rooms = (masterDB.rooms || []).filter(r => r.id !== id);
+                saveMasterDBToStorage('SDMS_ROOMS_UPDATED');
+                populateDropdowns();
+                renderRoomConfigList();
+                showToast("परीक्षा कक्ष हटाया गया!", "error");
+            };
+            document.getElementById("confirmModalText").innerText = "क्या आप इस परीक्षा कक्ष को हटाना चाहते हैं?";
+            document.getElementById("customConfirmModal").classList.remove("hidden");
+        }
+
+        /* ==========================================================================
+           5. SECTION 4: VISUAL ROOM SEATING CHART & DOOR SLIPS
+           ========================================================================== */
+        function renderSeatingChartContainer() {
+            const container = document.getElementById("seatingChartDisplayContainer");
+            if (!container) return;
+
+            const roomId = document.getElementById("chartRoomSelect")?.value || (masterDB.rooms[0]?.id || "");
+            const plan = masterDB.seatingPlans["2026-03-03_09:00 AM - 12:00 PM"] || Object.values(masterDB.seatingPlans)[0];
+            const h = masterDB.header || {};
+
+            if (!plan || !plan.rooms) {
+                container.innerHTML = `<div class="p-8 text-center bg-slate-50 border rounded-2xl font-bold text-slate-500">कोई बैठक व्यवस्था जनरेट नहीं हुई है। "ऑटोमैटिक जनरेटर" टैब से जनरेट करें।</div>`;
+                return;
+            }
+
+            const matchRoom = plan.rooms.find(r => r.roomId === roomId) || plan.rooms[0];
+            if (!matchRoom) {
+                container.innerHTML = `<div class="p-8 text-center bg-slate-50 border rounded-2xl font-bold text-slate-500">चयनित कक्ष का सीटिंग डेटा उपलब्ध नहीं है।</div>`;
+                return;
+            }
+
+            container.innerHTML = renderSingleRoomSeatingSheetHtml(matchRoom, plan, h);
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function renderSingleRoomSeatingSheetHtml(rmPlan, plan, h, needsPageBreak = false) {
+            let totalSeatedInRoom = 0;
+            const classBreakdown = {};
+
+            rmPlan.grid.forEach(r => r.forEach(c => c.forEach(st => {
+                if (st) {
+                    totalSeatedInRoom++;
+                    const key = `कक्षा ${st.targetClass}-${st.section}`;
+                    classBreakdown[key] = (classBreakdown[key] || 0) + 1;
+                }
+            })));
+
+            return `
+                <div class="a4-page ${needsPageBreak ? 'page-break' : ''} text-slate-950 border-2 border-slate-900 rounded-xl p-4 text-xs font-sans space-y-3">
+                    <!-- School Header -->
+                    <div class="text-center border-b-2 border-black pb-2 space-y-0.5">
+                        <span class="bg-black text-white px-3 py-0.5 rounded font-black text-[10px] uppercase">EXAM ROOM SEATING CHART & DOOR SLIP</span>
+                        <h2 class="text-base font-black uppercase tracking-tight">${safeStr(h.schoolNameHindi, 'पीएमश्री शास.क.उ.मा.वि. बेगमगंज')}</h2>
+                        <h3 class="text-xs font-black uppercase text-indigo-950">${plan.examType || 'ANNUAL EXAM'} — सत्र ${safeStr(h.currentSession)}</h3>
+                        <p class="text-[10px] font-extrabold font-mono">दिनांक: ${plan.date || '2026-03-03'} &nbsp;&nbsp;|&nbsp;&nbsp; समय/पालि: ${plan.shift || '09:00 AM - 12:00 PM'}</p>
+                    </div>
+
+                    <!-- Room Meta Banner -->
+                    <div class="bg-slate-100 border-2 border-black p-2 flex justify-between items-center font-black text-xs">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-base text-sky-950">${safeStr(rmPlan.roomNo)}</span>
+                            <span class="text-[11px] text-slate-700 font-mono">(${rmPlan.rows} Rows × ${rmPlan.cols} Cols)</span>
+                        </div>
+                        <div class="text-right space-x-2">
+                            <span>कुल क्षमता: ${rmPlan.rows * rmPlan.cols * rmPlan.seatsPerBench}</span>
+                            <span class="bg-amber-300 px-2 py-0.5 rounded border border-black">वर्तमान बैठाए गए: ${totalSeatedInRoom} छात्र</span>
+                        </div>
+                    </div>
+
+                    <!-- VISUAL GRID MAP -->
+                    <div class="space-y-1">
+                        <div class="text-center bg-slate-900 text-white p-1 font-mono font-bold text-[10px] rounded uppercase">
+                            ⬆️ ब्लैकबोर्ड / वीक्षक मंच (BLACKBOARD / INVIGILATOR STAGE) ⬆️
+                        </div>
+
+                        <div class="grid grid-cols-${rmPlan.cols} gap-2 pt-2">
+                            ${rmPlan.grid.map((row, rIdx) => row.map((bench, cIdx) => `
+                                <div class="border border-slate-900 rounded-lg p-1.5 bg-slate-50 text-[9.5px] font-bold space-y-1 shadow-sm">
+                                    <span class="text-[8px] text-slate-500 font-mono block border-b border-slate-300 pb-0.5 text-center">Row ${rIdx + 1}, Col ${cIdx + 1}</span>
+                                    
+                                    <div class="space-y-1">
+                                        ${bench.map((st, sIdx) => st ? `
+                                            <div class="bg-white p-1 rounded border border-sky-300 leading-tight">
+                                                <div class="flex justify-between items-center">
+                                                    <span class="font-mono font-black text-indigo-950 text-[10px]">${st.rollNo}</span>
+                                                    <span class="text-[8px] bg-sky-100 px-1 rounded text-sky-900 font-black">${st.targetClass}-${st.section}</span>
+                                                </div>
+                                                <p class="font-extrabold text-slate-900 truncate">${st.nameHindi || st.nameEng}</p>
+                                                <p class="text-[7.5px] text-purple-900 truncate">${st.subject || '—'}</p>
+                                            </div>
+                                        ` : `
+                                            <div class="bg-slate-200/60 p-1 rounded text-center text-slate-400 font-mono text-[8.5px]">
+                                                [खाली / VACANT]
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).join('')).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Class & Subject Summary inside Room -->
+                    <div class="border-2 border-black p-2 bg-slate-50 space-y-1">
+                        <span class="font-black text-xs uppercase block underline">इस कक्ष में उपस्थित छात्र श्रेणी ब्रेकडाउन:</span>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-bold">
+                            ${Object.entries(classBreakdown).map(([cls, cnt]) => `
+                                <span class="bg-white border p-1 rounded truncate">${cls}: <strong class="text-indigo-950">${cnt} छात्र</strong></span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Signatures -->
+                    <div class="pt-6 flex justify-between items-end text-xs font-bold border-t border-slate-300">
+                        <div>वीक्षक हस्ताक्षर (Invigilator Sign)</div>
+                        <div>केन्द्राध्यक्ष सील व हस्ताक्षर</div>
+                        <div>प्राचार्य सील व हस्ताक्षर</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /* ==========================================================================
+           6. SECTION 5: INVIGILATOR DUTY MANAGEMENT
+           ========================================================================== */
+        function renderInvigilatorsDutyRoster() {
+            const container = document.getElementById("invigilatorDutyTableContainer");
+            if (!container) return;
+
+            const duties = masterDB.duties || [];
+            container.innerHTML = `
+                <table class="w-full text-xs sm:text-sm border-collapse text-left font-semibold">
+                    <thead class="bg-purple-950 text-white font-bold uppercase whitespace-nowrap">
+                        <tr>
+                            <th class="p-2.5 border border-purple-900 text-center w-10">क्र.</th>
+                            <th class="p-2.5 border border-purple-900 text-center">दिनांक</th>
+                            <th class="p-2.5 border border-purple-900 text-center">पालि (Shift)</th>
+                            <th class="p-2.5 border border-purple-900">परीक्षा कक्ष</th>
+                            <th class="p-2.5 border border-purple-900">वीक्षक शिक्षक का नाम</th>
+                            <th class="p-2.5 border border-purple-900 text-center no-print w-24">कार्रवाई</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                        ${duties.length === 0 ? `
+                            <tr><td colspan="6" class="p-6 text-center text-slate-500 font-bold">कोई वीक्षक ड्यूटी आबंटित नहीं है।</td></tr>
+                        ` : duties.map((d, idx) => `
+                            <tr class="hover:bg-purple-50/50 transition">
+                                <td class="p-2 border text-center font-mono font-bold">${idx + 1}</td>
+                                <td class="p-2 border text-center font-mono font-black text-indigo-950">${safeStr(d.date)}</td>
+                                <td class="p-2 border text-center font-mono">${safeStr(d.shift)}</td>
+                                <td class="p-2 border font-black text-sky-950">${safeStr(d.roomNo)}</td>
+                                <td class="p-2 border font-bold text-slate-900">${safeStr(d.teacherName)}</td>
+                                <td class="p-2 border text-center no-print">
+                                    <button onclick="confirmDeleteDuty('${d.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 rounded text-xs font-bold shadow">
+                                        हटाएं
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function openDutyModal() {
+            populateDropdowns();
+            document.getElementById("dutyModal").classList.remove("hidden");
+        }
+
+        function closeDutyModal() { document.getElementById("dutyModal").classList.add("hidden"); }
+
+        function saveDutyForm(e) {
+            e.preventDefault();
+            const roomId = document.getElementById("dt_roomId").value;
+            const teacherId = document.getElementById("dt_teacherId").value;
+
+            const room = (masterDB.rooms || []).find(r => r.id === roomId);
+            const teacher = (masterDB.teachers || []).find(t => t.id === teacherId);
+
+            const dutyObj = {
+                id: "DUTY_" + Date.now(),
+                date: document.getElementById("dt_date").value,
+                shift: document.getElementById("dt_shift").value,
+                roomId,
+                roomNo: room ? room.roomNo : "Room 01",
+                teacherId,
+                teacherName: teacher ? teacher.nameHindi : "शिक्षक"
+            };
+
+            masterDB.duties = masterDB.duties || [];
+            masterDB.duties.push(dutyObj);
+
+            saveMasterDBToStorage('SDMS_DUTIES_UPDATED');
+            closeDutyModal();
+            renderInvigilatorsDutyRoster();
+            showToast("वीक्षक ड्यूटी सफलता पूर्वक आबंटित हुई!");
+        }
+
+        function confirmDeleteDuty(id) {
+            pendingDeleteAction = () => {
+                masterDB.duties = (masterDB.duties || []).filter(d => d.id !== id);
+                saveMasterDBToStorage('SDMS_DUTIES_UPDATED');
+                renderInvigilatorsDutyRoster();
+                showToast("वीक्षक ड्यूटी हटाई गई!", "error");
+            };
+            document.getElementById("confirmModalText").innerText = "क्या आप इस वीक्षक ड्यूटी को हटाना चाहते हैं?";
+            document.getElementById("customConfirmModal").classList.remove("hidden");
+        }
+
+        /* ==========================================================================
+           7. SECTION 6: ADVANCED REPORTS & 5-IN-1 EXPORTS
+           ========================================================================== */
+        function switchReportSubPill(pillId) {
+            reportSubPill = pillId;
+            document.querySelectorAll('.sub-pill-btn').forEach(b => {
+                b.classList.remove('active', 'bg-sky-50');
+            });
+            const activeBtn = document.getElementById(`pill-${pillId}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            renderAdvancedReportContainer();
+        }
+
+        function renderAdvancedReportContainer() {
+            const container = document.getElementById("advancedReportDisplayContainer");
+            if (!container) return;
+
+            const plan = masterDB.seatingPlans["2026-03-03_09:00 AM - 12:00 PM"] || Object.values(masterDB.seatingPlans)[0];
+            const searchVal = document.getElementById("rptSearchInput") ? document.getElementById("rptSearchInput").value.toLowerCase().trim() : "";
+
+            if (!plan || !plan.rooms) {
+                container.innerHTML = `<div class="p-8 text-center bg-slate-50 border rounded-2xl font-bold text-slate-500">कोई डेटा उपलब्ध नहीं है।</div>`;
+                return;
+            }
+
+            let flattenedStudents = [];
+            plan.rooms.forEach(rm => {
+                rm.grid.forEach((row, rIdx) => {
+                    row.forEach((col, cIdx) => {
+                        col.forEach((st, sIdx) => {
+                            if (st) {
+                                flattenedStudents.push({
+                                    roomNo: rm.roomNo,
+                                    desk: `R${rIdx + 1}-C${cIdx + 1}`,
+                                    ...st
+                                });
+                            }
+                        });
+                    });
+                });
+            });
+
+            if (searchVal) {
+                flattenedStudents = flattenedStudents.filter(st => `${safeStr(st.roomNo)} ${safeStr(st.nameHindi)} ${safeStr(st.rollNo)} ${safeStr(st.subject)} ${safeStr(st.targetClass)}`.toLowerCase().includes(searchVal));
+            }
+
+            container.innerHTML = `
+                <table class="w-full text-xs sm:text-sm border-collapse text-left font-semibold bg-white">
+                    <thead class="bg-rose-950 text-white font-bold uppercase whitespace-nowrap">
+                        <tr>
+                            <th class="p-2 border border-rose-900 text-center w-10">क्र.</th>
+                            <th class="p-2 border border-rose-900">परीक्षा कक्ष</th>
+                            <th class="p-2 border border-rose-900 text-center">डेस्क स्थान</th>
+                            <th class="p-2 border border-rose-900 text-center">अनुक्रमांक</th>
+                            <th class="p-2 border border-rose-900">विद्यार्थी का नाम</th>
+                            <th class="p-2 border border-rose-900 text-center">कक्षा & से.</th>
+                            <th class="p-2 border border-rose-900">परीक्षा विषय</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        ${flattenedStudents.map((st, i) => `
+                            <tr class="hover:bg-rose-50/40 transition">
+                                <td class="p-2 border text-center font-mono">${i + 1}</td>
+                                <td class="p-2 border font-extrabold text-sky-950">${safeStr(st.roomNo)}</td>
+                                <td class="p-2 border text-center font-mono font-bold">${safeStr(st.desk)}</td>
+                                <td class="p-2 border text-center font-mono font-black text-emerald-800">${safeStr(st.rollNo)}</td>
+                                <td class="p-2 border font-bold text-slate-900">${safeStr(st.nameHindi || st.nameEng)}</td>
+                                <td class="p-2 border text-center font-black text-indigo-950">${safeStr(st.targetClass)}-${safeStr(st.section)}</td>
+                                <td class="p-2 border font-extrabold text-purple-950">${safeStr(st.subject)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        /* EXPORT TOOLBAR ENGINE */
+        function exportChartPrint() { window.print(); }
+        function exportAllRoomsBulkPrint() { window.print(); }
+
+        function exportReportPrint() { window.print(); }
+        function exportReportPDF() {
+            showToast("PDF तैयार हो रही है...");
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4');
+            const target = document.getElementById("advancedReportDisplayContainer");
+            html2canvas(target).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                doc.addImage(imgData, 'PNG', 10, 10, 575, (canvas.height * 575) / canvas.width);
+                doc.save(`Exam_Seating_Report.pdf`);
+                showToast("PDF डाउनलोड हुआ!");
+            });
+        }
+        function exportReportExcel() {
+            const ws = XLSX.utils.json_to_sheet(masterDB.students || []);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "SeatingPlan");
+            XLSX.writeFile(wb, `Exam_Seating_Report.xlsx`);
+            showToast("Excel डाउनलोड हुआ!");
+        }
+        function exportReportDoc() {
+            const content = document.getElementById("advancedReportDisplayContainer").innerText;
+            const blob = new Blob(['\ufeff' + content], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Exam_Seating_Report.doc`;
+            a.click();
+            showToast("Word फ़ाइल डाउनलोड हुई!");
+        }
+        function exportReportImage() {
+            const target = document.getElementById("advancedReportDisplayContainer");
+            html2canvas(target).then(canvas => {
+                const a = document.createElement('a');
+                a.href = canvas.toDataURL('image/png');
+                a.download = `Exam_Seating_Report.png`;
+                a.click();
+                showToast("इमेज डाउनलोड हुई!");
+            });
+        }
+
+        function openShareModal(type) {
+            const input = document.getElementById("shareUrlInput");
+            if (input) input.value = `${window.location.href}#share-${type.toLowerCase()}`;
+            document.getElementById("shareLinkModal").classList.remove("hidden");
+        }
+
+        function closeShareModal() { document.getElementById("shareLinkModal").classList.add("hidden"); }
+
+        function copyShareUrl() {
+            const input = document.getElementById("shareUrlInput");
+            if (input) {
+                input.select();
+                document.execCommand('copy');
+                showToast("शेयर लिंक क्लिपबोर्ड पर कॉपी हो गया!");
+                closeShareModal();
+            }
+        }
+
+        /* GLOBAL SETTINGS FORM */
+        function saveHeaderSettingsForm(e) {
+            e.preventDefault();
+            masterDB.header = masterDB.header || {};
+            masterDB.header.schoolNameHindi = document.getElementById("cfg_schoolNameHindi").value.trim();
+            masterDB.header.schoolNameEng = document.getElementById("cfg_schoolNameEng").value.trim();
+            masterDB.header.udiseCode = document.getElementById("cfg_udiseCode").value.trim();
+            masterDB.header.centerCode = document.getElementById("cfg_centerCode").value.trim();
+            masterDB.header.currentSession = document.getElementById("cfg_currentSession").value.trim();
+            masterDB.header.shiftTime = document.getElementById("cfg_shiftTime").value.trim();
+            masterDB.header.watermarkText = document.getElementById("cfg_watermarkText").value.trim();
+            masterDB.header.principalSignText = document.getElementById("cfg_principalSignText").value.trim();
+
+            saveMasterDBToStorage('SDMS_HEADER_UPDATED');
+            renderSeatingChartContainer();
+            showToast("शाला हेडर सेटिंग्स सहेजी गईं!");
+        }
+
+        function renderBroadcastBanner() {
+            const container = document.getElementById("globalBroadcastBannerArea");
+            if (!container) return;
+            const raw = localStorage.getItem(BROADCAST_STORE_KEY);
+            if (!raw) { container.classList.add("hidden"); return; }
+
+            try {
+                const list = JSON.parse(raw);
+                if (!Array.isArray(list)) return;
+                const activeBroadcast = list.find(b => b && (b.groupScope === 'ALL' || b.groupScope === 'group11'));
+                if (activeBroadcast) {
+                    container.innerHTML = `
+                        <div class="bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 text-slate-950 p-3 shadow-lg flex items-center justify-between border-b-2 border-yellow-300">
+                            <div class="flex items-center space-x-3">
+                                <span class="bg-slate-950 text-amber-300 font-black text-xs px-2.5 py-1 rounded-full uppercase">${activeBroadcast.contentType || 'ANNOUNCEMENT'}</span>
+                                <span class="font-extrabold text-sm">${activeBroadcast.title || ''}</span>
+                                <span class="text-xs font-semibold">${activeBroadcast.message || ''}</span>
+                            </div>
+                            <button onclick="document.getElementById('globalBroadcastBannerArea').classList.add('hidden')" class="text-slate-950 font-black text-lg px-2">&times;</button>
+                        </div>
+                    `;
+                    container.classList.remove("hidden");
+                }
+            } catch(e){}
+        }
+
+        function closeConfirmModal(shouldDelete) {
+            document.getElementById("customConfirmModal").classList.add("hidden");
+            if (shouldDelete && pendingDeleteAction) pendingDeleteAction();
+            pendingDeleteAction = null;
+        }
+
+        function handleUserLogout() {
+            localStorage.removeItem(SSO_KEY);
+            showToast("लॉगआउट किया गया");
+            setTimeout(() => location.reload(), 1000);
+        }
+
+        channel.onmessage = (e) => {
+            if (e.data?.type && e.data.type.startsWith('SDMS_')) loadMasterDBFromStorage();
+        };
+    </script>
+</body>
+</html>
