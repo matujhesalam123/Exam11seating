@@ -124,6 +124,17 @@
     <!-- REAL-TIME DYNAMIC ADMIN BROADCAST BANNER OVERLAY -->
     <div id="globalBroadcastBannerArea" class="hidden sticky top-0 z-50 no-print"></div>
 
+    <!-- LOCKED PORTAL OVERLAY BANNER -->
+    <div id="portalLockOverlay" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full text-center space-y-3 shadow-2xl border-2 border-rose-500">
+            <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+                <i data-lucide="lock" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-base font-black text-slate-900">🔒 यह ग्रुप वेबसाइट एडमिन सर्वर द्वारा ब्लॉक की गई है</h3>
+            <p class="text-xs text-slate-600 font-bold">सुरक्षा कारणों से वर्तमान में इस ग्रुप पर परीक्षा बैठक व्यवस्था सम्पादन अस्थायी रूप से रोक दिया गया है।</p>
+        </div>
+    </div>
+
     <!-- HEADER -->
     <header class="bg-sky-950 text-white sticky top-0 z-40 border-b-2 border-sky-800 shadow-md no-print">
         <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap justify-between items-center gap-2">
@@ -758,6 +769,20 @@
         </div>
     </div>
 
+    <!-- CUSTOM CONFIRMATION DELETE MODAL -->
+    <div id="customConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-300 w-full max-w-xs p-5 space-y-4 text-center text-xs font-semibold">
+            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <h4 class="text-sm font-extrabold text-slate-900" id="confirmModalText">क्या आप इस रिकॉर्ड को हटाना चाहते हैं?</h4>
+            <div class="flex justify-center space-x-2 pt-2">
+                <button onclick="closeConfirmModal(false)" class="bg-slate-200 text-slate-700 px-5 py-2 rounded-xl font-bold">नहीं (रद्द करें)</button>
+                <button onclick="closeConfirmModal(true)" class="bg-rose-600 text-white px-5 py-2 rounded-xl font-bold shadow">हाँ, हटाएं</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 no-print"></div>
 
@@ -765,6 +790,7 @@
         const DB_KEY = 'SDMS_MASTER_SHARED_DB_V1';
         const SSO_KEY = 'SDMS_SSO_SESSION_KEY';
         const BROADCAST_STORE_KEY = 'SDMS_GLOBAL_BROADCAST_STORE';
+        const BLOCK_STORE_KEY = 'SDMS_PORTAL_BLOCK_STORE';
         const channel = new BroadcastChannel('sdms_sync_channel');
 
         const GROUP_URLS = {
@@ -864,16 +890,6 @@
             { id: "STU_1213", scholarNo: "14813", rollNo: "326651006604", nameHindi: "रिया मेहरा", nameEng: "RIYA MEHRA", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
             { id: "STU_1214", scholarNo: "14814", rollNo: "326651006605", nameHindi: "मुस्कान बी", nameEng: "MUSKAN BEE", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
             { id: "STU_1215", scholarNo: "14815", rollNo: "326651006606", nameHindi: "शिवानी गौर", nameEng: "SHIVANI GAUR", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
-            { id: "STU_1216", scholarNo: "14816", rollNo: "326651006608", nameHindi: "काजल मालवीय", nameEng: "KAJAL MALVIYA", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
-            { id: "STU_1217", scholarNo: "14817", rollNo: "326651006609", nameHindi: "हर्षिता चौबे", nameEng: "HARSHITA CHAUBEY", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
-            { id: "STU_1218", scholarNo: "14818", rollNo: "326651006612", nameHindi: "सपना विश्वकर्मा", nameEng: "SAPNA VISHWAKARMA", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
-            { id: "STU_1219", scholarNo: "14819", rollNo: "326651006613", nameHindi: "तनु पांडे", nameEng: "TANU PANDEY", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
-            { id: "STU_1220", scholarNo: "14820", rollNo: "326651006614", nameHindi: "आरती साहू", nameEng: "AARTI SAHU", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
-            { id: "STU_1221", scholarNo: "14821", rollNo: "326651006615", nameHindi: "शिवानी लोधी", nameEng: "SHIVANI LODHI", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
-            { id: "STU_1222", scholarNo: "14822", rollNo: "326651006616", nameHindi: "माही रघुवंशी", nameEng: "MAHI RAGHUVANSHI", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
-            { id: "STU_1223", scholarNo: "14823", rollNo: "326651006617", nameHindi: "पूजा यादव", nameEng: "POOJA YADAV", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
-            { id: "STU_1224", scholarNo: "14824", rollNo: "326651006618", nameHindi: "वैष्णवी शर्मा", nameEng: "VAISHNAVI SHARMA", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
-            { id: "STU_1225", scholarNo: "14825", rollNo: "326651006619", nameHindi: "अपेक्षा जैन", nameEng: "APEKSHA JAIN", targetClass: "12th", section: "B", subject: "भौतिक शास्त्र" },
 
             // Class 10th
             { id: "STU_1001", scholarNo: "16626", rollNo: "1001", nameHindi: "तपस्या तिवारी", nameEng: "TAPASYA TIWARI", targetClass: "10th", section: "A", subject: "(100) Mathematics" },
@@ -913,9 +929,11 @@
             try {
                 loadMasterDBFromStorage();
                 if (window.lucide) lucide.createIcons();
+                checkPortalLockStatus();
                 renderBroadcastBanner();
                 populateDropdowns();
-                runAutoSeatingAllocationEngine(true); // Initial silent build
+                populateAllocatorForm();
+                runAutoSeatingAllocationEngine(true); // Initial build
                 switchWorkspaceTab('dashboard');
             } catch(err) {
                 console.error("Init Error:", err);
@@ -1014,7 +1032,7 @@
         }
 
         /* ==========================================================================
-           2. SMART AUTO-SEATING ALLOCATION ALGORITHM
+           SMART AUTO-SEATING ALLOCATION ALGORITHM
            ========================================================================== */
         function populateAllocatorForm() {
             const container = document.getElementById("allocClassCheckboxesContainer");
@@ -1032,186 +1050,194 @@
         }
 
         function runAutoSeatingAllocationEngine(silent = false) {
-            const examType = document.getElementById("alloc_examType")?.value || "ANNUAL EXAM";
-            const date = document.getElementById("alloc_date")?.value || "2026-03-09";
-            const shift = document.getElementById("alloc_shift")?.value || "09:00 AM - 12:00 PM";
-            const pattern = document.getElementById("alloc_pattern")?.value || "COL_ALTERNATE";
+            try {
+                const examType = document.getElementById("alloc_examType")?.value || "ANNUAL EXAM";
+                const date = document.getElementById("alloc_date")?.value || "2026-03-09";
+                const shift = document.getElementById("alloc_shift")?.value || "09:00 AM - 12:00 PM";
+                const pattern = document.getElementById("alloc_pattern")?.value || "COL_ALTERNATE";
 
-            const selectedClassCheckboxes = Array.from(document.querySelectorAll('input[name="alloc_class_check"]:checked')).map(cb => cb.value);
+                const selectedClassCheckboxes = Array.from(document.querySelectorAll('input[name="alloc_class_check"]:checked')).map(cb => cb.value);
 
-            let studentPool = masterDB.students || [];
-            if (selectedClassCheckboxes.length > 0) {
-                studentPool = studentPool.filter(s => selectedClassCheckboxes.includes(`${s.targetClass}-${s.section}`));
-            }
-
-            // Group students into class-based queues for inter-leaving
-            const queuesByClass = {};
-            studentPool.forEach(st => {
-                const key = `${st.targetClass}-${st.section}`;
-                queuesByClass[key] = queuesByClass[key] || [];
-                queuesByClass[key].push(st);
-            });
-
-            const classKeys = Object.keys(queuesByClass);
-            if (classKeys.length === 0) {
-                if (!silent) showToast("बैठक व्यवस्था हेतु छात्र रिकॉर्ड उपलब्ध नहीं हैं!", "error");
-                return;
-            }
-
-            const rooms = masterDB.rooms || [];
-            const seatingPlanKey = `${date}_${shift}`;
-            const allocatedPlan = { date, shift, examType, pattern, rooms: [] };
-
-            rooms.forEach(rm => {
-                const rows = parseInt(rm.rows) || 5;
-                const cols = parseInt(rm.cols) || 5;
-                const seatsPerBench = parseInt(rm.seatsPerBench) || 2;
-                const roomGrid = [];
-
-                for (let r = 0; r < rows; r++) {
-                    const rowArray = [];
-                    for (let c = 0; c < cols; c++) {
-                        const benchSeats = [];
-                        for (let s = 0; s < seatsPerBench; s++) {
-                            let candidateStudent = null;
-                            
-                            let targetQueueKey = null;
-                            if (pattern === 'COL_ALTERNATE') {
-                                targetQueueKey = classKeys[(c + s) % classKeys.length];
-                            } else if (pattern === 'ROW_ALTERNATE') {
-                                targetQueueKey = classKeys[(r + s) % classKeys.length];
-                            } else { // CHECKERBOARD
-                                targetQueueKey = classKeys[(r + c + s) % classKeys.length];
-                            }
-
-                            if (queuesByClass[targetQueueKey] && queuesByClass[targetQueueKey].length > 0) {
-                                candidateStudent = queuesByClass[targetQueueKey].shift();
-                            } else {
-                                const availableKey = classKeys.find(k => queuesByClass[k] && queuesByClass[k].length > 0);
-                                if (availableKey) {
-                                    candidateStudent = queuesByClass[availableKey].shift();
-                                }
-                            }
-
-                            benchSeats.push(candidateStudent ? { ...candidateStudent } : null);
-                        }
-                        rowArray.push(benchSeats);
-                    }
-                    roomGrid.push(rowArray);
+                let studentPool = masterDB.students || [];
+                if (selectedClassCheckboxes.length > 0) {
+                    studentPool = studentPool.filter(s => selectedClassCheckboxes.includes(`${s.targetClass}-${s.section}`));
                 }
 
-                allocatedPlan.rooms.push({
-                    roomId: rm.id,
-                    roomNo: rm.roomNo,
-                    rows,
-                    cols,
-                    seatsPerBench,
-                    grid: roomGrid
+                // Group students into class-based queues for inter-leaving
+                const queuesByClass = {};
+                studentPool.forEach(st => {
+                    const key = `${st.targetClass}-${st.section}`;
+                    queuesByClass[key] = queuesByClass[key] || [];
+                    queuesByClass[key].push(st);
                 });
-            });
 
-            masterDB.seatingPlans[seatingPlanKey] = allocatedPlan;
-            saveMasterDBToStorage('SDMS_SEATING_UPDATED');
+                const classKeys = Object.keys(queuesByClass);
+                if (classKeys.length === 0) {
+                    if (!silent) showToast("बैठक व्यवस्था हेतु छात्र रिकॉर्ड उपलब्ध नहीं हैं!", "error");
+                    return;
+                }
 
-            if (!silent) {
-                showToast("स्वचालित बैठक व्यवस्था सफलतापूर्वक जनरेट हुई!");
-                switchWorkspaceTab('official-door-chart');
+                const rooms = masterDB.rooms || [];
+                const seatingPlanKey = `${date}_${shift}`;
+                const allocatedPlan = { date, shift, examType, pattern, rooms: [] };
+
+                rooms.forEach(rm => {
+                    const rows = parseInt(rm.rows) || 5;
+                    const cols = parseInt(rm.cols) || 5;
+                    const seatsPerBench = parseInt(rm.seatsPerBench) || 2;
+                    const roomGrid = [];
+
+                    for (let r = 0; r < rows; r++) {
+                        const rowArray = [];
+                        for (let c = 0; c < cols; c++) {
+                            const benchSeats = [];
+                            for (let s = 0; s < seatsPerBench; s++) {
+                                let candidateStudent = null;
+                                
+                                let targetQueueKey = null;
+                                if (pattern === 'COL_ALTERNATE') {
+                                    targetQueueKey = classKeys[(c + s) % classKeys.length];
+                                } else if (pattern === 'ROW_ALTERNATE') {
+                                    targetQueueKey = classKeys[(r + s) % classKeys.length];
+                                } else { // CHECKERBOARD
+                                    targetQueueKey = classKeys[(r + c + s) % classKeys.length];
+                                }
+
+                                if (queuesByClass[targetQueueKey] && queuesByClass[targetQueueKey].length > 0) {
+                                    candidateStudent = queuesByClass[targetQueueKey].shift();
+                                } else {
+                                    const availableKey = classKeys.find(k => queuesByClass[k] && queuesByClass[k].length > 0);
+                                    if (availableKey) {
+                                        candidateStudent = queuesByClass[availableKey].shift();
+                                    }
+                                }
+
+                                benchSeats.push(candidateStudent ? { ...candidateStudent } : null);
+                            }
+                            rowArray.push(benchSeats);
+                        }
+                        roomGrid.push(rowArray);
+                    }
+
+                    allocatedPlan.rooms.push({
+                        roomId: rm.id,
+                        roomNo: rm.roomNo,
+                        rows,
+                        cols,
+                        seatsPerBench,
+                        grid: roomGrid
+                    });
+                });
+
+                masterDB.seatingPlans[seatingPlanKey] = allocatedPlan;
+                saveMasterDBToStorage('SDMS_SEATING_UPDATED');
+
+                if (!silent) {
+                    showToast("स्वचालित बैठक व्यवस्था सफलतापूर्वक जनरेट हुई!");
+                    switchWorkspaceTab('official-door-chart');
+                }
+            } catch(e) {
+                console.error("Allocation Engine Error:", e);
             }
         }
 
         /* ==========================================================================
-           3. DASHBOARD & SUMMARY RENDERERS
+           DASHBOARD & SUMMARY RENDERERS
            ========================================================================== */
         function renderDashboardOverview() {
-            const plan = masterDB.seatingPlans["2026-03-09_09:00 AM - 12:00 PM"] || Object.values(masterDB.seatingPlans)[0];
+            try {
+                const plan = masterDB.seatingPlans["2026-03-09_09:00 AM - 12:00 PM"] || Object.values(masterDB.seatingPlans)[0];
 
-            let totalSeated = 0;
-            const classSubjectCounts = {};
+                let totalSeated = 0;
+                const classSubjectCounts = {};
 
-            if (plan && plan.rooms) {
-                plan.rooms.forEach(rm => {
-                    rm.grid.forEach(row => {
-                        row.forEach(col => {
-                            col.forEach(st => {
-                                if (st) {
-                                    totalSeated++;
-                                    const key = `कक्षा ${st.targetClass}-${st.section} (${st.subject || 'सामान्य'})`;
-                                    classSubjectCounts[key] = (classSubjectCounts[key] || 0) + 1;
-                                }
+                if (plan && plan.rooms) {
+                    plan.rooms.forEach(rm => {
+                        rm.grid.forEach(row => {
+                            row.forEach(col => {
+                                col.forEach(st => {
+                                    if (st) {
+                                        totalSeated++;
+                                        const key = `कक्षा ${st.targetClass}-${st.section} (${st.subject || 'सामान्य'})`;
+                                        classSubjectCounts[key] = (classSubjectCounts[key] || 0) + 1;
+                                    }
+                                });
                             });
                         });
                     });
-                });
-            }
+                }
 
-            document.getElementById("dash_totalSeatedStudents").innerText = `${totalSeated} छात्र`;
-            document.getElementById("dash_activeRoomsCount").innerText = `${(masterDB.rooms || []).length} कक्ष`;
-            document.getElementById("dash_assignedTeachersCount").innerText = `${(masterDB.duties || []).length} शिक्षक`;
-            document.getElementById("dash_activePatternName").innerText = plan?.pattern || "COL_ALTERNATE";
+                if (document.getElementById("dash_totalSeatedStudents")) document.getElementById("dash_totalSeatedStudents").innerText = `${totalSeated} छात्र`;
+                if (document.getElementById("dash_activeRoomsCount")) document.getElementById("dash_activeRoomsCount").innerText = `${(masterDB.rooms || []).length} कक्ष`;
+                if (document.getElementById("dash_assignedTeachersCount")) document.getElementById("dash_assignedTeachersCount").innerText = `${(masterDB.duties || []).length} शिक्षक`;
+                if (document.getElementById("dash_activePatternName")) document.getElementById("dash_activePatternName").innerText = plan?.pattern || "COL_ALTERNATE";
 
-            // Room Capacity Table
-            const roomSummaryContainer = document.getElementById("dash_roomSummaryContainer");
-            if (roomSummaryContainer) {
-                roomSummaryContainer.innerHTML = `
-                    <table class="w-full text-xs text-center border-collapse">
-                        <thead class="bg-slate-100 font-bold border-b">
-                            <tr>
-                                <th class="p-1.5 border-r">कक्ष क्रमांक</th>
-                                <th class="p-1.5 border-r">ग्रिड लेआउट</th>
-                                <th class="p-1.5 border-r">कुल क्षमता</th>
-                                <th class="p-1.5">वर्तमान बैठाए गए छात्र</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${(masterDB.rooms || []).map(rm => {
-                                let seatedInRoom = 0;
-                                if (plan && plan.rooms) {
-                                    const matchRm = plan.rooms.find(r => r.roomId === rm.id);
-                                    if (matchRm) {
-                                        matchRm.grid.forEach(r => r.forEach(c => c.forEach(st => { if (st) seatedInRoom++; })));
-                                    }
-                                }
-                                return `
-                                    <tr class="border-b">
-                                        <td class="p-1.5 border-r font-bold text-sky-950">${safeStr(rm.roomNo)}</td>
-                                        <td class="p-1.5 border-r font-mono text-[11px]">${rm.rows} Rows × ${rm.cols} Cols</td>
-                                        <td class="p-1.5 border-r font-mono font-black text-slate-700">${rm.capacity}</td>
-                                        <td class="p-1.5 font-mono font-black text-emerald-700 bg-emerald-50">${seatedInRoom} छात्र</td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                `;
-            }
-
-            // Class/Subject Breakdown Table
-            const classSubContainer = document.getElementById("dash_classSubjectSummaryContainer");
-            if (classSubContainer) {
-                classSubContainer.innerHTML = `
-                    <table class="w-full text-xs text-center border-collapse">
-                        <thead class="bg-slate-100 font-bold border-b">
-                            <tr>
-                                <th class="p-1.5 border-r text-left pl-3">कक्षा एवं विषय विवरण</th>
-                                <th class="p-1.5">उपस्थित छात्र संख्या</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${Object.keys(classSubjectCounts).length === 0 ? `<tr><td colspan="2" class="p-3 text-slate-500">कोई डेटा नहीं</td></tr>` :
-                            Object.entries(classSubjectCounts).map(([key, count]) => `
-                                <tr class="border-b">
-                                    <td class="p-1.5 border-r text-left pl-3 font-bold text-indigo-950">${key}</td>
-                                    <td class="p-1.5 font-mono font-black text-purple-950 bg-purple-50">${count} छात्र</td>
+                // Room Capacity Table
+                const roomSummaryContainer = document.getElementById("dash_roomSummaryContainer");
+                if (roomSummaryContainer) {
+                    roomSummaryContainer.innerHTML = `
+                        <table class="w-full text-xs text-center border-collapse">
+                            <thead class="bg-slate-100 font-bold border-b">
+                                <tr>
+                                    <th class="p-1.5 border-r">कक्ष क्रमांक</th>
+                                    <th class="p-1.5 border-r">ग्रिड लेआउट</th>
+                                    <th class="p-1.5 border-r">कुल क्षमता</th>
+                                    <th class="p-1.5">वर्तमान बैठाए गए छात्र</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
+                            </thead>
+                            <tbody>
+                                ${(masterDB.rooms || []).map(rm => {
+                                    let seatedInRoom = 0;
+                                    if (plan && plan.rooms) {
+                                        const matchRm = plan.rooms.find(r => r.roomId === rm.id);
+                                        if (matchRm) {
+                                            matchRm.grid.forEach(r => r.forEach(c => c.forEach(st => { if (st) seatedInRoom++; })));
+                                        }
+                                    }
+                                    return `
+                                        <tr class="border-b">
+                                            <td class="p-1.5 border-r font-bold text-sky-950">${safeStr(rm.roomNo)}</td>
+                                            <td class="p-1.5 border-r font-mono text-[11px]">${rm.rows} Rows × ${rm.cols} Cols</td>
+                                            <td class="p-1.5 border-r font-mono font-black text-slate-700">${rm.capacity}</td>
+                                            <td class="p-1.5 font-mono font-black text-emerald-700 bg-emerald-50">${seatedInRoom} छात्र</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+
+                // Class/Subject Breakdown Table
+                const classSubContainer = document.getElementById("dash_classSubjectSummaryContainer");
+                if (classSubContainer) {
+                    classSubContainer.innerHTML = `
+                        <table class="w-full text-xs text-center border-collapse">
+                            <thead class="bg-slate-100 font-bold border-b">
+                                <tr>
+                                    <th class="p-1.5 border-r text-left pl-3">कक्षा एवं विषय विवरण</th>
+                                    <th class="p-1.5">उपस्थित छात्र संख्या</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${Object.keys(classSubjectCounts).length === 0 ? `<tr><td colspan="2" class="p-3 text-slate-500">कोई डेटा नहीं</td></tr>` :
+                                Object.entries(classSubjectCounts).map(([key, count]) => `
+                                    <tr class="border-b">
+                                        <td class="p-1.5 border-r text-left pl-3 font-bold text-indigo-950">${key}</td>
+                                        <td class="p-1.5 font-mono font-black text-purple-950 bg-purple-50">${count} छात्र</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+            } catch(e) {
+                console.error("Dashboard overview render error:", e);
             }
         }
 
         /* ==========================================================================
-           4. ROOM & LAYOUT CONFIGURATOR RENDERER
+           ROOM & LAYOUT CONFIGURATOR RENDERER
            ========================================================================== */
         function renderRoomConfigList() {
             const container = document.getElementById("roomCardsListContainer");
@@ -1312,7 +1338,7 @@
         }
 
         /* ==========================================================================
-           5. VISUAL ROOM SEATING CHART & DOOR SLIPS
+           VISUAL ROOM SEATING CHART & DOOR SLIPS
            ========================================================================== */
         function renderSeatingChartContainer() {
             const container = document.getElementById("seatingChartDisplayContainer");
@@ -1377,7 +1403,7 @@
                             ⬆️ ब्लैकबोर्ड / वीक्षक मंच (BLACKBOARD / INVIGILATOR STAGE) ⬆️
                         </div>
 
-                        <div class="grid grid-cols-${rmPlan.cols} gap-2 pt-2">
+                        <div style="display: grid; grid-template-columns: repeat(${rmPlan.cols}, minmax(0, 1fr)); gap: 0.5rem;" class="pt-2">
                             ${rmPlan.grid.map((row, rIdx) => row.map((bench, cIdx) => `
                                 <div class="border border-slate-900 rounded-lg p-1.5 bg-slate-50 text-[9.5px] font-bold space-y-1 shadow-sm">
                                     <span class="text-[8px] text-slate-500 font-mono block border-b border-slate-300 pb-0.5 text-center">Row ${rIdx + 1}, Col ${cIdx + 1}</span>
@@ -1424,7 +1450,7 @@
         }
 
         /* ==========================================================================
-           6. OFFICIAL DOOR SEATING GRID (EXACT REPLICA OF IMG_20260820_163338 & 163324)
+           OFFICIAL DOOR SEATING GRID (EXACT REPLICA OF IMG_20260820_163338 & 163324)
            ========================================================================== */
         function renderOfficialDoorGridContainer() {
             const container = document.getElementById("officialDoorGridDisplayContainer");
@@ -1461,13 +1487,11 @@
         function renderSingleOfficialDoorGridSheetHtml(rmPlan, plan, h, orientation, needsPageBreak) {
             const pageClass = orientation === 'LANDSCAPE' ? 'a4-page-landscape' : 'a4-page';
             
-            // Re-arrange students into column-wise seating lists as in official photos
             const cols = rmPlan.cols || 5;
             const rows = rmPlan.rows || 5;
             const seatsPerBench = rmPlan.seatsPerBench || 2;
 
-            // Transpose grid into individual columns
-            const columnAllocations = []; // Array of columns, each containing seats
+            const columnAllocations = [];
             const classCounts = {};
             let totalSeatedInRoom = 0;
 
@@ -1498,7 +1522,6 @@
                 }
             }
 
-            // Find main seated classes and subjects string for header
             const uniqueClassesArr = Array.from(new Set(
                 rmPlan.grid.flatMap(r => r.flatMap(c => c.flatMap(s => s ? `कक्षा- ${s.targetClass}वी ${s.subject || ''}` : [])))
             ));
@@ -1579,7 +1602,7 @@
         }
 
         /* ==========================================================================
-           7. INVIGILATOR DUTY MANAGEMENT
+           INVIGILATOR DUTY MANAGEMENT
            ========================================================================== */
         function renderInvigilatorsDutyRoster() {
             const container = document.getElementById("invigilatorDutyTableContainer");
@@ -1668,7 +1691,7 @@
         }
 
         /* ==========================================================================
-           8. SECTION 7: ADVANCED REPORTS & 5-IN-1 EXPORTS (FULLY RESTORED & WORKING)
+           SECTION 7: ADVANCED REPORTS & 5-IN-1 EXPORTS
            ========================================================================== */
         function switchReportSubPill(pillId) {
             reportSubPill = pillId;
@@ -1689,7 +1712,6 @@
             const searchVal = document.getElementById("rptSearchInput") ? document.getElementById("rptSearchInput").value.toLowerCase().trim() : "";
             const sortVal = document.getElementById("rptSortSelect") ? document.getElementById("rptSortSelect").value : "roomAsc";
 
-            // Flatten all seated students from seating plan
             let flattenedStudents = [];
             if (plan && plan.rooms) {
                 plan.rooms.forEach(rm => {
@@ -1708,7 +1730,6 @@
                     });
                 });
             } else {
-                // Fallback to master student DB if seating plan not yet calculated
                 flattenedStudents = (masterDB.students || []).map(st => ({
                     roomNo: "कक्ष -13",
                     desk: "Row 1, Col 1",
@@ -1729,7 +1750,6 @@
             }
 
             if (reportSubPill === 'room-report') {
-                // ROOM-WISE REPORT TABLE
                 container.innerHTML = `
                     <div class="space-y-3">
                         <div class="flex justify-between items-center bg-sky-50 p-3 rounded-xl border border-sky-200">
@@ -1766,7 +1786,6 @@
                     </div>
                 `;
             } else if (reportSubPill === 'class-report') {
-                // CLASS-WISE REPORT TABLE
                 const classGroups = {};
                 flattenedStudents.forEach(st => {
                     const key = `कक्षा ${st.targetClass}-${st.section}`;
@@ -1813,7 +1832,6 @@
                     </div>
                 `;
             } else if (reportSubPill === 'subject-report') {
-                // SUBJECT-WISE REPORT TABLE
                 const subGroups = {};
                 flattenedStudents.forEach(st => {
                     const key = safeStr(st.subject, 'सामान्य विषय');
@@ -1860,7 +1878,6 @@
                     </div>
                 `;
             } else if (reportSubPill === 'duty-report') {
-                // INVIGILATOR DUTY ROSTER REPORT TABLE
                 const duties = masterDB.duties || [];
                 container.innerHTML = `
                     <div class="space-y-3">
@@ -1899,7 +1916,7 @@
         }
 
         /* ==========================================================================
-           9. EXPORT TOOLBARS & SHARE MODAL
+           EXPORT TOOLBARS & SHARE MODAL
            ========================================================================== */
         function exportChartPrint() { window.print(); }
         function exportAllRoomsBulkPrint() { window.print(); }
@@ -2059,6 +2076,26 @@
             localStorage.removeItem(SSO_KEY);
             showToast("लॉगआउट किया गया");
             setTimeout(() => location.reload(), 1000);
+        }
+
+        function checkPortalLockStatus() {
+            const raw = localStorage.getItem(BLOCK_STORE_KEY);
+            if (!raw) return;
+            try {
+                const blockStore = JSON.parse(raw);
+                const overlay = document.getElementById("portalLockOverlay");
+                const ssoRaw = localStorage.getItem(SSO_KEY);
+                const currentUser = ssoRaw ? JSON.parse(ssoRaw).email?.toLowerCase() : null;
+
+                const isUserBlocked = blockStore.allUsersBlocked || (currentUser && (blockStore.blockedUsers || []).includes(currentUser));
+                if (overlay) {
+                    if (blockStore.group11 || isUserBlocked) {
+                        overlay.classList.remove("hidden");
+                    } else {
+                        overlay.classList.add("hidden");
+                    }
+                }
+            } catch(e){}
         }
 
         channel.onmessage = (e) => {
